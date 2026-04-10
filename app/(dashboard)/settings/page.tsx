@@ -140,8 +140,8 @@ function GhostButton({ children, onClick, danger }: {
         padding: '5px 12px',
         borderRadius: 8,
         background: 'transparent',
-        border: `0.5px solid ${danger ? '#E24B4A' : 'var(--color-border)'}`,
-        color: danger ? '#A32D2D' : 'var(--color-muted-foreground)',
+        border: `0.5px solid ${danger ? '#6b2a2a' : 'var(--color-border)'}`,
+        color: danger ? '#d46b6b' : 'var(--color-muted-foreground)',
         cursor: 'pointer',
       }}
     >
@@ -292,8 +292,8 @@ export default function SettingsPage() {
                       fontWeight: 500,
                       padding: '2px 7px',
                       borderRadius: 99,
-                      background: '#EAF3DE',
-                      color: '#27500A',
+                      background: '#142108',
+                      color: '#74b34e',
                     }}>
                       Active
                     </span>
@@ -422,7 +422,7 @@ export default function SettingsPage() {
               padding: '10px 0',
             }}>
               <div>
-                <div style={{ fontSize: 13, color: '#A32D2D' }}>Delete account</div>
+                <div style={{ fontSize: 13, color: '#d46b6b' }}>Delete account</div>
                 <div style={{ fontSize: 11, color: 'var(--color-muted-foreground)', marginTop: 2 }}>
                   Permanently delete all your data
                 </div>

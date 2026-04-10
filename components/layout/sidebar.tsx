@@ -10,6 +10,7 @@ export default function Sidebar() {
   const links = [
     {
       href: '/dashboard',
+      label: 'Dashboard',
       icon: (
         <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
           <rect x="2" y="2" width="5" height="5" rx="1"/>
@@ -21,6 +22,7 @@ export default function Sidebar() {
     },
     {
       href: '/applications',
+      label: 'Applications',
       icon: (
         <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
           <path d="M2 4h12M2 8h12M2 12h8"/>
@@ -29,6 +31,7 @@ export default function Sidebar() {
     },
     {
       href: '/analytics',
+      label: 'Analytics',
       icon: (
         <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
           <polyline points="2,12 6,7 9,10 14,4"/>
@@ -38,30 +41,31 @@ export default function Sidebar() {
   ]
 
   return (
-    <div className="w-[52px] h-screen border-r border-border flex flex-col items-center py-4 gap-1.5 flex-shrink-0 bg-background">
-      
-      {/* Logo */}
-      <div className="w-[26px] h-[26px] bg-[#534AB7] rounded-md flex items-center justify-center mb-2">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
-          <polyline points="2,10 6,2 10,10"/>
-          <line x1="3.5" y1="7" x2="8.5" y2="7"/>
-        </svg>
+    <div className="w-[200px] h-screen border-r border-border flex flex-col py-3 gap-0.5 flex-shrink-0 bg-background">
+
+      {/* Wordmark */}
+      <div className="px-4 mb-4">
+        <span className="text-[20px] font-bold tracking-[-0.03em]" style={{ color: '#6b63d4' }}>Pipelined</span>
       </div>
 
       {/* Nav links */}
-      {links.map(link => (
-        <Link
-          key={link.href}
-          href={link.href}
-          className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors
-            ${pathname === link.href || pathname.startsWith(link.href)
-              ? 'bg-secondary text-primary'
-              : 'text-muted-foreground hover:bg-secondary'
-            }`}
-        >
-          {link.icon}
-        </Link>
-      ))}
+      {links.map(link => {
+        const active = pathname === link.href || pathname.startsWith(link.href)
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={`mx-2 flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] transition-colors
+              ${active
+                ? 'bg-secondary text-primary font-medium'
+                : 'text-muted-foreground hover:bg-secondary hover:text-primary'
+              }`}
+          >
+            {link.icon}
+            {link.label}
+          </Link>
+        )
+      })}
 
       {/* Spacer */}
       <div className="flex-1" />
@@ -69,16 +73,17 @@ export default function Sidebar() {
       {/* Settings at bottom */}
       <Link
         href="/settings"
-        className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors
+        className={`mx-2 flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] transition-colors
           ${pathname === '/settings'
-            ? 'bg-secondary text-primary'
-            : 'text-muted-foreground hover:bg-secondary'
+            ? 'bg-secondary text-primary font-medium'
+            : 'text-muted-foreground hover:bg-secondary hover:text-primary'
           }`}
       >
         <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
           <circle cx="8" cy="8" r="2.5"/>
           <path d="M8 2v1M8 13v1M2 8h1M13 8h1M3.5 3.5l.7.7M11.8 11.8l.7.7M3.5 12.5l.7-.7M11.8 4.2l.7-.7"/>
         </svg>
+        Settings
       </Link>
 
     </div>

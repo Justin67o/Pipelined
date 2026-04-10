@@ -57,19 +57,19 @@ const statusLabels: Record<Status, string> = {
 }
 
 const funnelColors: Record<string, string> = {
-  Saved:        '#E6F1FB',
-  Applied:      '#EEEDFE',
-  'Phone screen': '#E1F5EE',
-  Interview:    '#EEEDFE',
-  Offer:        '#EAF3DE',
+  Saved:          '#18202e',
+  Applied:        '#1d1840',
+  'Phone screen': '#0d2318',
+  Interview:      '#1d1840',
+  Offer:          '#142108',
 }
 
 const funnelTextColors: Record<string, string> = {
-  Saved:        '#185FA5',
-  Applied:      '#3C3489',
-  'Phone screen': '#085041',
-  Interview:    '#3C3489',
-  Offer:        '#27500A',
+  Saved:          '#6d9ed5',
+  Applied:        '#8b80df',
+  'Phone screen': '#50a07a',
+  Interview:      '#8b80df',
+  Offer:          '#74b34e',
 }
 
 function computeFunnel(apps: Application[]) {
