@@ -1,0 +1,37 @@
+'use client'
+
+import { matchScoreColor } from '@/lib/matchScore'
+
+interface KanbanCardProps {
+  company: string
+  role: string
+  matchScore: number | null
+  followUpDate: Date | null
+  deadline: Date | null
+}
+
+export default function KanbanCard({ company, role, matchScore, followUpDate, deadline }: KanbanCardProps) {
+  const dateToShow = followUpDate ?? deadline
+  return (
+    <div className="bg-secondary border border-border rounded-lg p-3 flex flex-col gap-2 cursor-pointer hover:border-muted-foreground transition-colors">
+      <div className="flex flex-col gap-0.5">
+        <span className="text-[13px] font-medium text-primary">{company}</span>
+        <span className="text-[11px] text-muted-foreground">{role}</span>
+      </div>
+      <div className="flex items-center justify-between">
+        {matchScore !== null ? (
+          <span style={matchScoreColor(matchScore)} className="text-[10px] font-medium px-1.5 py-0.5 rounded">
+            {matchScore}% match
+          </span>
+        ) : (
+          <span />
+        )}
+        {dateToShow && (
+          <span className="text-[10px] text-tertiary">
+            {dateToShow.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })}
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}

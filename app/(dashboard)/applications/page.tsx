@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
+import KanbanCard from '../../../components/kanbanCard'
+import { matchScoreColor } from '@/lib/matchScore'
 
 type View = 'table' | 'kanban'
 type Status = 'SAVED' | 'APPLIED' | 'PHONE_SCREEN' | 'INTERVIEW' | 'OFFER' | 'REJECTED'
@@ -15,40 +17,49 @@ interface Application {
     location: string | null
     remote: boolean
     dateApplied: Date | null
+    followUpDate: Date | null
+    deadline: Date | null
 }
 
 const mockApplications: Application[] = [
-    { id: 'app_1', company: 'Shopify', role: 'Software Engineer Intern', status: 'INTERVIEW', matchScore: 82, location: 'Ottawa, ON', remote: false, dateApplied: new Date('2026-03-28') },
-    { id: 'app_2', company: 'Wealthsimple', role: 'Backend Developer Co-op', status: 'PHONE_SCREEN', matchScore: 76, location: 'Toronto, ON', remote: false, dateApplied: new Date('2026-03-25') },
-    { id: 'app_3', company: 'TD Bank', role: 'Developer Intern', status: 'OFFER', matchScore: 68, location: 'Toronto, ON', remote: false, dateApplied: new Date('2026-03-20') },
-    { id: 'app_4', company: 'Koho', role: 'Full Stack Co-op', status: 'INTERVIEW', matchScore: 79, location: null, remote: true, dateApplied: new Date('2026-03-18') },
-    { id: 'app_5', company: 'Relay', role: 'Frontend Engineer Intern', status: 'PHONE_SCREEN', matchScore: 71, location: 'Toronto, ON', remote: false, dateApplied: new Date('2026-03-12') },
-    { id: 'app_6', company: 'Google', role: 'SWE Intern', status: 'REJECTED', matchScore: 55, location: 'Waterloo, ON', remote: false, dateApplied: new Date('2026-03-15') },
-    { id: 'app_7', company: 'Stripe', role: 'Backend Co-op', status: 'REJECTED', matchScore: 61, location: null, remote: true, dateApplied: new Date('2026-03-10') },
-    { id: 'app_8', company: 'D2L', role: 'Software Dev Co-op', status: 'APPLIED', matchScore: 73, location: 'Kitchener, ON', remote: false, dateApplied: new Date('2026-03-08') },
-    { id: 'app_9', company: 'Vidyard', role: 'Dev Co-op', status: 'APPLIED', matchScore: 69, location: 'Kitchener, ON', remote: false, dateApplied: new Date('2026-03-05') },
-    { id: 'app_10', company: 'Faire', role: 'Software Engineer Co-op', status: 'SAVED', matchScore: null, location: 'Remote', remote: true, dateApplied: null },
-    { id: 'app_11', company: 'Miovision', role: 'Backend Developer Intern', status: 'APPLIED', matchScore: 74, location: 'Waterloo, ON', remote: false, dateApplied: new Date('2026-03-22') },
-    { id: 'app_12', company: 'OpenText', role: 'Software Dev Co-op', status: 'APPLIED', matchScore: 66, location: 'Waterloo, ON', remote: false, dateApplied: new Date('2026-03-19') },
+    { id: 'app_1',  company: 'Shopify',      role: 'Software Engineer Intern', status: 'INTERVIEW',    matchScore: 82,   location: 'Ottawa, ON',    remote: false, dateApplied: new Date('2026-03-28'), followUpDate: new Date('2026-04-09'), deadline: new Date('2026-04-30') },
+    { id: 'app_2',  company: 'Wealthsimple', role: 'Backend Developer Co-op',  status: 'PHONE_SCREEN', matchScore: 76,   location: 'Toronto, ON',   remote: false, dateApplied: new Date('2026-03-25'), followUpDate: new Date('2026-04-11'), deadline: null },
+    { id: 'app_3',  company: 'TD Bank',      role: 'Developer Intern',         status: 'OFFER',        matchScore: 68,   location: 'Toronto, ON',   remote: false, dateApplied: new Date('2026-03-20'), followUpDate: null,                  deadline: new Date('2026-04-15') },
+    { id: 'app_4',  company: 'Koho',         role: 'Full Stack Co-op',         status: 'INTERVIEW',    matchScore: 79,   location: null,            remote: true,  dateApplied: new Date('2026-03-18'), followUpDate: new Date('2026-04-14'), deadline: null },
+    { id: 'app_5',  company: 'Relay',        role: 'Frontend Engineer Intern', status: 'PHONE_SCREEN', matchScore: 71,   location: 'Toronto, ON',   remote: false, dateApplied: new Date('2026-03-12'), followUpDate: new Date('2026-04-16'), deadline: null },
+    { id: 'app_6',  company: 'Google',       role: 'SWE Intern',               status: 'REJECTED',     matchScore: 55,   location: 'Waterloo, ON',  remote: false, dateApplied: new Date('2026-03-15'), followUpDate: null,                  deadline: null },
+    { id: 'app_7',  company: 'Stripe',       role: 'Backend Co-op',            status: 'REJECTED',     matchScore: 61,   location: null,            remote: true,  dateApplied: new Date('2026-03-10'), followUpDate: null,                  deadline: null },
+    { id: 'app_8',  company: 'D2L',          role: 'Software Dev Co-op',       status: 'APPLIED',      matchScore: 73,   location: 'Kitchener, ON', remote: false, dateApplied: new Date('2026-03-08'), followUpDate: null,                  deadline: null },
+    { id: 'app_9',  company: 'Vidyard',      role: 'Dev Co-op',                status: 'APPLIED',      matchScore: 69,   location: 'Kitchener, ON', remote: false, dateApplied: new Date('2026-03-05'), followUpDate: null,                  deadline: null },
+    { id: 'app_10', company: 'Faire',        role: 'Software Engineer Co-op',  status: 'SAVED',        matchScore: null, location: 'Remote',        remote: true,  dateApplied: null,                   followUpDate: null,                  deadline: null },
+    { id: 'app_11', company: 'Miovision',    role: 'Backend Developer Intern', status: 'APPLIED',      matchScore: 74,   location: 'Waterloo, ON',  remote: false, dateApplied: new Date('2026-03-22'), followUpDate: null,                  deadline: null },
+    { id: 'app_12', company: 'OpenText',     role: 'Software Dev Co-op',       status: 'APPLIED',      matchScore: 66,   location: 'Waterloo, ON',  remote: false, dateApplied: new Date('2026-03-19'), followUpDate: null,                  deadline: null },
 ]
 
 const statusLabels: Record<Status, string> = {
-    SAVED: 'Saved',
-    APPLIED: 'Applied',
+    SAVED:        'Saved',
+    APPLIED:      'Applied',
     PHONE_SCREEN: 'Phone screen',
-    INTERVIEW: 'Interview',
-    OFFER: 'Offer',
-    REJECTED: 'Rejected',
+    INTERVIEW:    'Interview',
+    OFFER:        'Offer',
+    REJECTED:     'Rejected',
 }
 
 const statusColors: Record<Status, { bg: string; text: string }> = {
-    SAVED: { bg: '#F1EFE8', text: '#5F5E5A' },
-    APPLIED: { bg: '#E6F1FB', text: '#185FA5' },
+    SAVED:        { bg: '#F1EFE8', text: '#5F5E5A' },
+    APPLIED:      { bg: '#E6F1FB', text: '#185FA5' },
     PHONE_SCREEN: { bg: '#E1F5EE', text: '#085041' },
-    INTERVIEW: { bg: '#EEEDFE', text: '#3C3489' },
-    OFFER: { bg: '#EAF3DE', text: '#27500A' },
-    REJECTED: { bg: '#FCEBEB', text: '#A32D2D' },
+    INTERVIEW:    { bg: '#EEEDFE', text: '#3C3489' },
+    OFFER:        { bg: '#EAF3DE', text: '#27500A' },
+    REJECTED:     { bg: '#FCEBEB', text: '#A32D2D' },
 }
+
+const KANBAN_COLUMNS: { status: Status; label: string }[] = [
+    { status: 'PHONE_SCREEN', label: 'Screening' },
+    { status: 'INTERVIEW',    label: 'Interview' },
+    { status: 'OFFER',        label: 'Offer' },
+    { status: 'REJECTED',     label: 'Rejected' },
+]
 
 function Badge({ status }: { status: Status }) {
     const { bg, text } = statusColors[status]
@@ -86,8 +97,7 @@ export default function ApplicationsPage() {
                             <button
                                 key={v}
                                 onClick={() => setView(v)}
-                                className={`text-[11px] px-2.5 py-1 rounded-md cursor-pointer border-0 capitalize transition-colors ${view === v ? 'bg-background text-primary' : 'bg-transparent text-muted-foreground hover:text-primary'
-                                    }`}
+                                className={`text-[11px] px-2.5 py-1 rounded-md cursor-pointer border-0 capitalize transition-colors ${view === v ? 'bg-background text-primary' : 'bg-transparent text-muted-foreground hover:text-primary'}`}
                             >
                                 {v}
                             </button>
@@ -138,7 +148,6 @@ export default function ApplicationsPage() {
 
                         {/* Table */}
                         <div className="bg-background border border-border rounded-xl overflow-hidden">
-                            {/* Header */}
                             <div className="grid text-[11px] font-medium text-muted-foreground uppercase tracking-[0.04em] px-4 py-2.5 border-b border-border" style={{ gridTemplateColumns: COL }}>
                                 <span>Company</span>
                                 <span>Role</span>
@@ -147,23 +156,26 @@ export default function ApplicationsPage() {
                                 <span>Location</span>
                                 <span>Applied</span>
                             </div>
-
-                            {/* Rows */}
                             {filtered.length === 0 ? (
                                 <div className="text-[12px] text-muted-foreground text-center py-10">No applications found</div>
                             ) : (
                                 filtered.map((app, i) => (
                                     <div
                                         key={app.id}
-                                        className={`grid items-center px-4 py-2.5 cursor-pointer hover:bg-secondary transition-colors ${i < filtered.length - 1 ? 'border-b border-border' : ''
-                                            }`}
+                                        className={`grid items-center px-4 py-2.5 cursor-pointer hover:bg-secondary transition-colors ${i < filtered.length - 1 ? 'border-b border-border' : ''}`}
                                         style={{ gridTemplateColumns: COL }}
                                     >
                                         <span className="text-[13px] font-medium text-primary truncate">{app.company}</span>
                                         <span className="text-[12px] text-muted-foreground truncate pr-4">{app.role}</span>
                                         <span><Badge status={app.status} /></span>
-                                        <span className="text-[12px] text-muted-foreground">
-                                            {app.matchScore !== null ? `${app.matchScore}%` : '—'}
+                                        <span>
+                                            {app.matchScore !== null ? (
+                                                <span style={matchScoreColor(app.matchScore)} className="text-[10px] font-medium px-1.5 py-0.5 rounded">
+                                                    {app.matchScore}%
+                                                </span>
+                                            ) : (
+                                                <span className="text-[12px] text-muted-foreground">—</span>
+                                            )}
                                         </span>
                                         <span className="text-[12px] text-muted-foreground truncate">
                                             {app.remote ? 'Remote' : (app.location ?? '—')}
@@ -181,31 +193,28 @@ export default function ApplicationsPage() {
                 )}
 
                 {view === 'kanban' && (
-                    <div className="grid grid-cols-4 gap-2">
-                        <div className="bg-background border border-border rounded-xl flex-1 p-3.5">
-                            <div className='flex justify-between'>
-                                <div>Screening</div>
-                                <div>2</div>
-                            </div>
-                        </div>
-                        <div className="bg-background border border-border rounded-xl flex-1 p-3.5">
-                            <div className='flex justify-between'>
-                                <div>Interview</div>
-                                <div>4</div>
-                            </div>
-                        </div>
-                        <div className="bg-background border border-border rounded-xl flex-1 p-3.5">
-                            <div className='flex justify-between'>
-                                <div>Offer</div>
-                                <div>1</div>
-                            </div>
-                        </div>
-                        <div className="bg-background border border-border rounded-xl flex-1 p-3.5">
-                            <div className='flex justify-between'>
-                                <div>Rejected</div>
-                                <div>6</div>
-                            </div>
-                        </div>
+                    <div className="grid grid-cols-4 gap-3 h-full">
+                        {KANBAN_COLUMNS.map(({ status, label }) => {
+                            const cards = mockApplications.filter(a => a.status === status)
+                            return (
+                                <div key={status} className="bg-secondary border border-border rounded-xl p-3 flex flex-col gap-2">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="text-[12px] font-medium text-primary">{label}</span>
+                                        <span className="text-[11px] text-muted-foreground">{cards.length}</span>
+                                    </div>
+                                    {cards.map(app => (
+                                        <KanbanCard
+                                            key={app.id}
+                                            company={app.company}
+                                            role={app.role}
+                                            matchScore={app.matchScore}
+                                            followUpDate={app.followUpDate}
+                                            deadline={app.deadline}
+                                        />
+                                    ))}
+                                </div>
+                            )
+                        })}
                     </div>
                 )}
 
