@@ -29,18 +29,18 @@ interface Application {
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
 const mockApplications: Application[] = [
-  { id: 'app_1', company: 'Shopify',      role: 'Software Engineer Intern',  status: 'INTERVIEW',    matchScore: 82, dateApplied: new Date('2026-03-28'), createdAt: new Date('2026-03-28') },
-  { id: 'app_2', company: 'Wealthsimple', role: 'Backend Developer Co-op',   status: 'PHONE_SCREEN', matchScore: 76, dateApplied: new Date('2026-03-25'), createdAt: new Date('2026-03-25') },
-  { id: 'app_3', company: 'TD Bank',      role: 'Developer Intern',          status: 'OFFER',        matchScore: 68, dateApplied: new Date('2026-03-20'), createdAt: new Date('2026-03-20') },
-  { id: 'app_4', company: 'Koho',         role: 'Full Stack Co-op',          status: 'INTERVIEW',    matchScore: 79, dateApplied: new Date('2026-03-18'), createdAt: new Date('2026-03-18') },
-  { id: 'app_5', company: 'Relay',        role: 'Frontend Engineer Intern',  status: 'PHONE_SCREEN', matchScore: 71, dateApplied: new Date('2026-03-12'), createdAt: new Date('2026-03-12') },
-  { id: 'app_6', company: 'Google',       role: 'SWE Intern',                status: 'REJECTED',     matchScore: 55, dateApplied: new Date('2026-03-15'), createdAt: new Date('2026-03-15') },
-  { id: 'app_7', company: 'Stripe',       role: 'Backend Co-op',             status: 'REJECTED',     matchScore: 61, dateApplied: new Date('2026-03-10'), createdAt: new Date('2026-03-10') },
-  { id: 'app_8', company: 'D2L',          role: 'Software Dev Co-op',        status: 'APPLIED',      matchScore: 73, dateApplied: new Date('2026-03-08'), createdAt: new Date('2026-03-08') },
-  { id: 'app_9', company: 'Vidyard',      role: 'Dev Co-op',                 status: 'APPLIED',      matchScore: 69, dateApplied: new Date('2026-03-05'), createdAt: new Date('2026-03-05') },
-  { id: 'app_10', company: 'Faire',       role: 'Software Engineer Co-op',   status: 'SAVED',        matchScore: null, dateApplied: null,                 createdAt: new Date('2026-03-01') },
-  { id: 'app_11', company: 'Miovision',   role: 'Backend Developer Intern',  status: 'APPLIED',      matchScore: 74, dateApplied: new Date('2026-03-22'), createdAt: new Date('2026-03-22') },
-  { id: 'app_12', company: 'OpenText',    role: 'Software Dev Co-op',        status: 'APPLIED',      matchScore: 66, dateApplied: new Date('2026-03-19'), createdAt: new Date('2026-03-19') },
+  { id: 'app_1',  company: 'Shopify',      role: 'Software Engineer Intern',  status: 'INTERVIEW',    matchScore: 82,   dateApplied: new Date('2026-03-28'), createdAt: new Date('2026-03-28') },
+  { id: 'app_2',  company: 'Wealthsimple', role: 'Backend Developer Co-op',   status: 'PHONE_SCREEN', matchScore: 76,   dateApplied: new Date('2026-03-25'), createdAt: new Date('2026-03-25') },
+  { id: 'app_3',  company: 'TD Bank',      role: 'Developer Intern',          status: 'OFFER',        matchScore: 68,   dateApplied: new Date('2026-03-20'), createdAt: new Date('2026-03-20') },
+  { id: 'app_4',  company: 'Koho',         role: 'Full Stack Co-op',          status: 'INTERVIEW',    matchScore: 79,   dateApplied: new Date('2026-03-18'), createdAt: new Date('2026-03-18') },
+  { id: 'app_5',  company: 'Relay',        role: 'Frontend Engineer Intern',  status: 'PHONE_SCREEN', matchScore: 71,   dateApplied: new Date('2026-03-12'), createdAt: new Date('2026-03-12') },
+  { id: 'app_6',  company: 'Google',       role: 'SWE Intern',                status: 'REJECTED',     matchScore: 55,   dateApplied: new Date('2026-03-15'), createdAt: new Date('2026-03-15') },
+  { id: 'app_7',  company: 'Stripe',       role: 'Backend Co-op',             status: 'REJECTED',     matchScore: 61,   dateApplied: new Date('2026-03-10'), createdAt: new Date('2026-03-10') },
+  { id: 'app_8',  company: 'D2L',          role: 'Software Dev Co-op',        status: 'APPLIED',      matchScore: 73,   dateApplied: new Date('2026-03-08'), createdAt: new Date('2026-03-08') },
+  { id: 'app_9',  company: 'Vidyard',      role: 'Dev Co-op',                 status: 'APPLIED',      matchScore: 69,   dateApplied: new Date('2026-03-05'), createdAt: new Date('2026-03-05') },
+  { id: 'app_10', company: 'Faire',        role: 'Software Engineer Co-op',   status: 'SAVED',        matchScore: null, dateApplied: null,                   createdAt: new Date('2026-03-01') },
+  { id: 'app_11', company: 'Miovision',    role: 'Backend Developer Intern',  status: 'APPLIED',      matchScore: 74,   dateApplied: new Date('2026-03-22'), createdAt: new Date('2026-03-22') },
+  { id: 'app_12', company: 'OpenText',     role: 'Software Dev Co-op',        status: 'APPLIED',      matchScore: 66,   dateApplied: new Date('2026-03-19'), createdAt: new Date('2026-03-19') },
 ]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -117,9 +117,9 @@ function computeStats(apps: Application[]) {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ background: 'var(--color-secondary)', borderRadius: 8, padding: '12px 14px' }}>
-      <div style={{ fontSize: 11, color: 'var(--color-muted-foreground)', marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 20, fontWeight: 500, color: 'var(--color-primary)' }}>{value}</div>
+    <div className="bg-secondary rounded-lg px-3.5 py-3">
+      <div className="text-[11px] text-muted-foreground mb-1">{label}</div>
+      <div className="text-[20px] font-medium text-primary">{value}</div>
     </div>
   )
 }
@@ -128,20 +128,8 @@ function StatCard({ label, value }: { label: string; value: string }) {
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{
-      background: 'var(--color-background)',
-      border: '0.5px solid var(--color-border)',
-      borderRadius: 12,
-      padding: 16,
-    }}>
-      <div style={{
-        fontSize: 11,
-        fontWeight: 500,
-        color: 'var(--color-muted-foreground)',
-        textTransform: 'uppercase',
-        letterSpacing: '0.04em',
-        marginBottom: 14,
-      }}>
+    <div className="bg-background border border-border rounded-xl p-4">
+      <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-[0.04em] mb-3.5">
         {title}
       </div>
       {children}
@@ -158,65 +146,42 @@ export default function AnalyticsPage() {
   const maxCount = Math.max(...funnelData.map(d => d.count))
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="flex flex-col h-full">
 
       {/* Topbar */}
-      <div style={{
-        height: 44,
-        borderBottom: '0.5px solid var(--color-border)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 16px',
-        background: 'var(--color-background)',
-        flexShrink: 0,
-      }}>
-        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-primary)' }}>Analytics</span>
-        <span style={{
-          fontSize: 11,
-          background: 'var(--color-secondary)',
-          border: '0.5px solid var(--color-border)',
-          borderRadius: 99,
-          padding: '3px 10px',
-          color: 'var(--color-muted-foreground)',
-          cursor: 'pointer',
-        }}>
+      <div className="h-11 border-b border-border flex items-center justify-between px-4 bg-background shrink-0">
+        <span className="text-[13px] font-medium text-primary">Analytics</span>
+        <span className="text-[11px] bg-secondary border border-border rounded-full px-2.5 py-0.5 text-muted-foreground cursor-pointer">
           Fall 2026 ▾
         </span>
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3.5">
 
         {/* Stats Row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
+        <div className="grid grid-cols-3 gap-2">
           <StatCard label="Total applications" value={String(stats.total)} />
           <StatCard label="Response rate" value={`${stats.responseRate}%`} />
           <StatCard label="Avg. match score" value={String(stats.avgScore)} />
         </div>
 
         {/* Charts Row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 12 }}>
+        <div className="grid grid-cols-2 gap-3">
 
           {/* Funnel */}
           <SectionCard title="Application funnel">
             {funnelData.map(({ name, count }) => {
               const pct = maxCount > 0 ? Math.round((count / maxCount) * 100) : 0
               return (
-                <div key={name} style={{ marginBottom: 10 }}>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    fontSize: 11,
-                    color: 'var(--color-muted-foreground)',
-                    marginBottom: 4,
-                  }}>
+                <div key={name} className="mb-2.5">
+                  <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
                     <span>{name}</span>
                     <span>{count}</span>
                   </div>
                   <div style={{
                     width: `${Math.max(pct, 6)}%`,
-                    background: funnelColors[name] ?? '#E6F1FB',
+                    background: funnelColors[name] ?? '#18202e',
                     borderRadius: 6,
                     height: 26,
                     display: 'flex',
@@ -224,7 +189,7 @@ export default function AnalyticsPage() {
                     padding: '0 10px',
                     fontSize: 11,
                     fontWeight: 500,
-                    color: funnelTextColors[name] ?? '#185FA5',
+                    color: funnelTextColors[name] ?? '#6d9ed5',
                     minWidth: 36,
                   }}>
                     {count > 0 ? `${pct}%` : '—'}
@@ -272,7 +237,7 @@ export default function AnalyticsPage() {
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div style={{ fontSize: 12, color: 'var(--color-tertiary)', textAlign: 'center', padding: '40px 0' }}>
+              <div className="text-[12px] text-tertiary text-center py-10">
                 Not enough data yet
               </div>
             )}
@@ -285,10 +250,10 @@ export default function AnalyticsPage() {
           <ResponsiveContainer width="100%" height={180}>
             <BarChart
               data={[
-                { range: '0–20',  count: mockApplications.filter(a => a.matchScore !== null && a.matchScore <= 20).length },
-                { range: '21–40', count: mockApplications.filter(a => a.matchScore !== null && a.matchScore > 20 && a.matchScore <= 40).length },
-                { range: '41–60', count: mockApplications.filter(a => a.matchScore !== null && a.matchScore > 40 && a.matchScore <= 60).length },
-                { range: '61–80', count: mockApplications.filter(a => a.matchScore !== null && a.matchScore > 60 && a.matchScore <= 80).length },
+                { range: '0–20',   count: mockApplications.filter(a => a.matchScore !== null && a.matchScore <= 20).length },
+                { range: '21–40',  count: mockApplications.filter(a => a.matchScore !== null && a.matchScore > 20 && a.matchScore <= 40).length },
+                { range: '41–60',  count: mockApplications.filter(a => a.matchScore !== null && a.matchScore > 40 && a.matchScore <= 60).length },
+                { range: '61–80',  count: mockApplications.filter(a => a.matchScore !== null && a.matchScore > 60 && a.matchScore <= 80).length },
                 { range: '81–100', count: mockApplications.filter(a => a.matchScore !== null && a.matchScore > 80).length },
               ]}
               margin={{ top: 4, right: 8, bottom: 4, left: -20 }}

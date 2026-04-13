@@ -61,20 +61,8 @@ const CURRENT_YEAR = 2026
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{
-      background: 'var(--color-background)',
-      border: '0.5px solid var(--color-border)',
-      borderRadius: 12,
-      padding: 16,
-    }}>
-      <div style={{
-        fontSize: 11,
-        fontWeight: 500,
-        color: 'var(--color-muted-foreground)',
-        textTransform: 'uppercase',
-        letterSpacing: '0.04em',
-        marginBottom: 14,
-      }}>
+    <div className="bg-background border border-border rounded-xl p-4">
+      <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-[0.04em] mb-3.5">
         {title}
       </div>
       {children}
@@ -84,14 +72,8 @@ function SectionCard({ title, children }: { title: string; children: React.React
 
 function SettingRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '10px 0',
-      borderBottom: '0.5px solid var(--color-border)',
-    }}>
-      <span style={{ fontSize: 13, color: 'var(--color-primary)' }}>{label}</span>
+    <div className="flex items-center justify-between py-2.5 border-b border-border">
+      <span className="text-[13px] text-primary">{label}</span>
       {children}
     </div>
   )
@@ -101,28 +83,13 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
   return (
     <div
       onClick={() => onChange(!on)}
-      style={{
-        width: 32,
-        height: 18,
-        borderRadius: 99,
-        background: on ? '#534AB7' : 'var(--color-secondary)',
-        border: on ? 'none' : '0.5px solid var(--color-border)',
-        position: 'relative',
-        cursor: 'pointer',
-        transition: 'background 0.2s',
-        flexShrink: 0,
-      }}
+      className={`w-8 h-[18px] rounded-full relative cursor-pointer transition-colors duration-200 shrink-0 ${
+        on ? 'bg-[#534AB7]' : 'bg-secondary border border-border'
+      }`}
     >
-      <div style={{
-        position: 'absolute',
-        top: 2,
-        left: on ? 14 : 2,
-        width: 14,
-        height: 14,
-        borderRadius: '50%',
-        background: on ? '#fff' : 'var(--color-muted-foreground)',
-        transition: 'left 0.2s',
-      }} />
+      <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full transition-[left] duration-200 ${
+        on ? 'left-3.5 bg-white' : 'left-0.5 bg-muted-foreground'
+      }`} />
     </div>
   )
 }
@@ -135,15 +102,11 @@ function GhostButton({ children, onClick, danger }: {
   return (
     <button
       onClick={onClick}
-      style={{
-        fontSize: 11,
-        padding: '5px 12px',
-        borderRadius: 8,
-        background: 'transparent',
-        border: `0.5px solid ${danger ? '#6b2a2a' : 'var(--color-border)'}`,
-        color: danger ? '#d46b6b' : 'var(--color-muted-foreground)',
-        cursor: 'pointer',
-      }}
+      className={`text-[11px] px-3 py-1.5 rounded-lg bg-transparent cursor-pointer border ${
+        danger
+          ? 'border-[#6b2a2a] text-[#d46b6b]'
+          : 'border-border text-muted-foreground'
+      }`}
     >
       {children}
     </button>
@@ -188,75 +151,54 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="flex flex-col h-full">
 
       {/* Topbar */}
-      <div style={{
-        height: 44,
-        borderBottom: '0.5px solid var(--color-border)',
-        display: 'flex',
-        alignItems: 'center',
-        padding: '0 16px',
-        background: 'var(--color-background)',
-        flexShrink: 0,
-      }}>
-        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-primary)' }}>Settings</span>
+      <div className="h-11 border-b border-border flex items-center px-4 bg-background shrink-0">
+        <span className="text-[13px] font-medium text-primary">Settings</span>
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
-        <div style={{ maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="max-w-[640px] mx-auto w-full flex flex-col gap-3.5">
 
           {/* Profile */}
           <SectionCard title="Profile">
             <SettingRow label="Name">
-              <span style={{ fontSize: 12, color: 'var(--color-muted-foreground)' }}>{mockUser.name}</span>
+              <span className="text-[12px] text-muted-foreground">{mockUser.name}</span>
             </SettingRow>
             <SettingRow label="Email">
-              <span style={{ fontSize: 12, color: 'var(--color-muted-foreground)' }}>{mockUser.email}</span>
+              <span className="text-[12px] text-muted-foreground">{mockUser.email}</span>
             </SettingRow>
-            <div style={{ paddingTop: 10, display: 'flex', justifyContent: 'flex-end' }}>
+            <div className="pt-2.5 flex justify-end">
               <GhostButton>Edit profile</GhostButton>
             </div>
           </SectionCard>
 
           {/* Resume */}
           <SectionCard title="Resume">
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '10px 0',
-              borderBottom: '0.5px solid var(--color-border)',
-            }}>
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
               <div>
-                <div style={{ fontSize: 13, color: 'var(--color-primary)' }}>
+                <div className="text-[13px] text-primary">
                   {resumeUploaded ? resumeFileName : 'No resume uploaded'}
                 </div>
                 {resumeUploaded && (
-                  <div style={{ fontSize: 11, color: 'var(--color-muted-foreground)', marginTop: 2 }}>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
                     Uploaded {new Date().toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </div>
                 )}
               </div>
-              <label style={{ cursor: 'pointer' }}>
+              <label className="cursor-pointer">
                 <input
                   type="file"
                   accept=".pdf"
-                  style={{ display: 'none' }}
+                  className="hidden"
                   onChange={handleResumeUpload}
                 />
                 <GhostButton>{resumeUploaded ? 'Replace' : 'Upload'}</GhostButton>
               </label>
             </div>
-            <div style={{
-              marginTop: 10,
-              padding: '8px 10px',
-              background: 'var(--color-secondary)',
-              borderRadius: 8,
-              fontSize: 11,
-              color: 'var(--color-muted-foreground)',
-            }}>
+            <div className="mt-2.5 px-2.5 py-2 bg-secondary rounded-lg text-[11px] text-muted-foreground">
               {resumeUploaded
                 ? 'Resume text is parsed and stored for ML match scoring on every application.'
                 : 'Upload your resume PDF to enable ML match scoring when you add jobs.'}
@@ -268,33 +210,20 @@ export default function SettingsPage() {
             {cycles.map(cycle => (
               <div
                 key={cycle.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '10px 0',
-                  borderBottom: '0.5px solid var(--color-border)',
-                }}
+                className="flex items-center justify-between py-2.5 border-b border-border"
               >
                 <div>
-                  <div style={{ fontSize: 13, color: 'var(--color-primary)' }}>
+                  <div className="text-[13px] text-primary">
                     {cycle.term} {cycle.year}
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--color-muted-foreground)', marginTop: 2 }}>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
                     {cycle._count?.applications ?? 0} applications
                     {cycle.id === activeCycleId && ' · Active'}
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <div className="flex gap-1.5 items-center">
                   {cycle.id === activeCycleId ? (
-                    <span style={{
-                      fontSize: 10,
-                      fontWeight: 500,
-                      padding: '2px 7px',
-                      borderRadius: 99,
-                      background: '#142108',
-                      color: '#74b34e',
-                    }}>
+                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#142108] text-[#74b34e]">
                       Active
                     </span>
                   ) : (
@@ -307,75 +236,40 @@ export default function SettingsPage() {
             ))}
 
             {showNewCycleForm ? (
-              <div style={{ paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ display: 'flex', gap: 8 }}>
+              <div className="pt-3 flex flex-col gap-2">
+                <div className="flex gap-2">
                   <select
                     value={newTerm}
                     onChange={e => setNewTerm(e.target.value)}
-                    style={{
-                      flex: 1,
-                      fontSize: 12,
-                      padding: '6px 8px',
-                      borderRadius: 8,
-                      border: '0.5px solid var(--color-border)',
-                      background: 'var(--color-secondary)',
-                      color: 'var(--color-primary)',
-                      outline: 'none',
-                    }}
+                    className="flex-1 text-[12px] px-2 py-1.5 rounded-lg border border-border bg-secondary text-primary outline-none"
                   >
                     {TERMS.map(t => <option key={t}>{t}</option>)}
                   </select>
                   <select
                     value={newYear}
                     onChange={e => setNewYear(Number(e.target.value))}
-                    style={{
-                      flex: 1,
-                      fontSize: 12,
-                      padding: '6px 8px',
-                      borderRadius: 8,
-                      border: '0.5px solid var(--color-border)',
-                      background: 'var(--color-secondary)',
-                      color: 'var(--color-primary)',
-                      outline: 'none',
-                    }}
+                    className="flex-1 text-[12px] px-2 py-1.5 rounded-lg border border-border bg-secondary text-primary outline-none"
                   >
                     {[CURRENT_YEAR, CURRENT_YEAR + 1, CURRENT_YEAR + 2].map(y => (
                       <option key={y}>{y}</option>
                     ))}
                   </select>
                 </div>
-                <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                <div className="flex gap-1.5 justify-end">
                   <GhostButton onClick={() => setShowNewCycleForm(false)}>Cancel</GhostButton>
                   <button
                     onClick={handleAddCycle}
-                    style={{
-                      fontSize: 11,
-                      padding: '5px 12px',
-                      borderRadius: 8,
-                      background: '#534AB7',
-                      color: '#fff',
-                      border: 'none',
-                      cursor: 'pointer',
-                    }}
+                    className="text-[11px] px-3 py-1.5 rounded-lg bg-[#534AB7] text-white border-0 cursor-pointer"
                   >
                     Create cycle
                   </button>
                 </div>
               </div>
             ) : (
-              <div style={{ paddingTop: 10 }}>
+              <div className="pt-2.5">
                 <button
                   onClick={() => setShowNewCycleForm(true)}
-                  style={{
-                    width: '100%',
-                    fontSize: 12,
-                    padding: '7px',
-                    borderRadius: 8,
-                    background: 'transparent',
-                    border: '0.5px solid var(--color-border)',
-                    color: 'var(--color-muted-foreground)',
-                    cursor: 'pointer',
-                  }}
+                  className="w-full text-[12px] py-1.5 rounded-lg bg-transparent border border-border text-muted-foreground cursor-pointer"
                 >
                   + New cycle
                 </button>
@@ -388,44 +282,25 @@ export default function SettingsPage() {
             <SettingRow label="Follow-up reminders">
               <Toggle on={followUpReminders} onChange={setFollowUpReminders} />
             </SettingRow>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '10px 0',
-            }}>
-              <span style={{ fontSize: 13, color: 'var(--color-primary)' }}>Deadline alerts</span>
+            <div className="flex items-center justify-between py-2.5">
+              <span className="text-[13px] text-primary">Deadline alerts</span>
               <Toggle on={deadlineAlerts} onChange={setDeadlineAlerts} />
             </div>
           </SectionCard>
 
-          {/* Danger Zone */}
+          {/* Account */}
           <SectionCard title="Account">
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '10px 0',
-            }}>
+            <div className="flex items-center justify-between py-2.5">
               <div>
-                <div style={{ fontSize: 13, color: 'var(--color-primary)' }}>Sign out</div>
-                <div style={{ fontSize: 11, color: 'var(--color-muted-foreground)', marginTop: 2 }}>
-                  Sign out of your account
-                </div>
+                <div className="text-[13px] text-primary">Sign out</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">Sign out of your account</div>
               </div>
               <GhostButton>Sign out</GhostButton>
             </div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '10px 0',
-            }}>
+            <div className="flex items-center justify-between py-2.5">
               <div>
-                <div style={{ fontSize: 13, color: '#d46b6b' }}>Delete account</div>
-                <div style={{ fontSize: 11, color: 'var(--color-muted-foreground)', marginTop: 2 }}>
-                  Permanently delete all your data
-                </div>
+                <div className="text-[13px] text-[#d46b6b]">Delete account</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">Permanently delete all your data</div>
               </div>
               <GhostButton danger>Delete account</GhostButton>
             </div>

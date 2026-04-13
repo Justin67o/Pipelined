@@ -368,15 +368,7 @@ function computeStats(apps: Application[]) {
 function Badge({ status }: { status: Status }) {
   const { bg, text } = statusColors[status]
   return (
-    <span style={{
-      background: bg,
-      color: text,
-      fontSize: 10,
-      fontWeight: 500,
-      padding: '2px 7px',
-      borderRadius: 99,
-      whiteSpace: 'nowrap',
-    }}>
+    <span style={{ background: bg, color: text, fontSize: 10, fontWeight: 500, padding: '2px 7px', borderRadius: 99, whiteSpace: 'nowrap' }}>
       {statusLabels[status]}
     </span>
   )
@@ -384,14 +376,10 @@ function Badge({ status }: { status: Status }) {
 
 function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div style={{
-      background: 'var(--color-secondary)',
-      borderRadius: 8,
-      padding: '12px 14px',
-    }}>
-      <div style={{ fontSize: 11, color: 'var(--color-muted-foreground)', marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 20, fontWeight: 500, color: 'var(--color-primary)' }}>{value}</div>
-      {sub && <div style={{ fontSize: 11, color: 'var(--color-tertiary)', marginTop: 2 }}>{sub}</div>}
+    <div className="bg-secondary rounded-lg px-3.5 py-3">
+      <div className="text-[11px] text-muted-foreground mb-1">{label}</div>
+      <div className="text-[20px] font-medium text-primary">{value}</div>
+      {sub && <div className="text-[11px] text-tertiary mt-0.5">{sub}</div>}
     </div>
   )
 }
@@ -418,51 +406,26 @@ export default function DashboardPage() {
     .slice(0, 10)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="flex flex-col h-full">
 
       {/* Topbar */}
-      <div style={{
-        height: 44,
-        borderBottom: '0.5px solid var(--color-border)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 16px',
-        background: 'var(--color-background)',
-        flexShrink: 0,
-      }}>
-        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-primary)' }}>Dashboard</span>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span style={{
-            fontSize: 11,
-            background: 'var(--color-secondary)',
-            border: '0.5px solid var(--color-border)',
-            borderRadius: 99,
-            padding: '3px 10px',
-            color: 'var(--color-muted-foreground)',
-            cursor: 'pointer',
-          }}>
+      <div className="h-11 border-b border-border flex items-center justify-between px-4 bg-background shrink-0">
+        <span className="text-[13px] font-medium text-primary">Dashboard</span>
+        <div className="flex gap-2 items-center">
+          <span className="text-[11px] bg-secondary border border-border rounded-full px-2.5 py-0.5 text-muted-foreground cursor-pointer">
             Fall 2026 ▾
           </span>
-          <button style={{
-            fontSize: 12,
-            padding: '5px 12px',
-            borderRadius: 8,
-            background: '#534AB7',
-            color: '#fff',
-            border: 'none',
-            cursor: 'pointer',
-          }}>
+          <button className="text-[12px] px-3 py-1.5 rounded-lg bg-[#534AB7] text-white cursor-pointer border-0">
             + Add job
           </button>
         </div>
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3.5">
 
         {/* Stats Row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8 }}>
+        <div className="grid grid-cols-4 gap-2">
           <StatCard label="Total applications" value={String(stats.total)} sub="this cycle" />
           <StatCard label="Response rate" value={`${stats.responseRate}%`} sub={`${stats.total} applied`} />
           <StatCard label="Active on kanban" value={String(stats.active)} sub="live opportunities" />
@@ -470,28 +433,16 @@ export default function DashboardPage() {
         </div>
 
         {/* Two column grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: 12 }}>
+        <div className="grid gap-3" style={{ gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)' }}>
 
           {/* Active Pipeline */}
-          <div style={{
-            background: 'var(--color-background)',
-            border: '0.5px solid var(--color-border)',
-            borderRadius: 12,
-            padding: 14,
-          }}>
-            <div style={{
-              fontSize: 11,
-              fontWeight: 500,
-              color: 'var(--color-muted-foreground)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
-              marginBottom: 10,
-            }}>
+          <div className="bg-background border border-border rounded-xl p-3.5">
+            <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-[0.04em] mb-2.5">
               Active pipeline
             </div>
 
             {activePipeline.length === 0 && (
-              <div style={{ fontSize: 12, color: 'var(--color-tertiary)', textAlign: 'center', padding: '20px 0' }}>
+              <div className="text-[12px] text-tertiary text-center py-5">
                 No active applications yet
               </div>
             )}
@@ -499,25 +450,15 @@ export default function DashboardPage() {
             {activePipeline.map(app => {
               const nextDate = getNextDate(app)
               return (
-                <div key={app.id} style={{
-                  background: 'var(--color-background)',
-                  border: '0.5px solid var(--color-border)',
-                  borderRadius: 8,
-                  padding: '10px 12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: 6,
-                  cursor: 'pointer',
-                }}>
+                <div key={app.id} className="bg-background border border-border rounded-lg px-3 py-2.5 flex items-center justify-between mb-1.5 cursor-pointer">
                   <div>
-                    <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-primary)' }}>{app.company}</div>
-                    <div style={{ fontSize: 11, color: 'var(--color-muted-foreground)' }}>{app.role}</div>
+                    <div className="text-[12px] font-medium text-primary">{app.company}</div>
+                    <div className="text-[11px] text-muted-foreground">{app.role}</div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
+                  <div className="text-right">
                     <Badge status={app.status} />
                     {nextDate && (
-                      <div style={{ fontSize: 10, color: 'var(--color-tertiary)', marginTop: 3 }}>
+                      <div className="text-[10px] text-tertiary mt-0.5">
                         {formatDate(nextDate)}
                       </div>
                     )}
@@ -528,50 +469,25 @@ export default function DashboardPage() {
           </div>
 
           {/* Recent Activity */}
-          <div style={{
-            background: 'var(--color-background)',
-            border: '0.5px solid var(--color-border)',
-            borderRadius: 12,
-            padding: 14,
-          }}>
-            <div style={{
-              fontSize: 11,
-              fontWeight: 500,
-              color: 'var(--color-muted-foreground)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
-              marginBottom: 10,
-            }}>
+          <div className="bg-background border border-border rounded-xl p-3.5">
+            <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-[0.04em] mb-2.5">
               Recent activity
             </div>
 
             {recentActivity.length === 0 && (
-              <div style={{ fontSize: 12, color: 'var(--color-tertiary)', textAlign: 'center', padding: '20px 0' }}>
+              <div className="text-[12px] text-tertiary text-center py-5">
                 No activity yet
               </div>
             )}
 
             {recentActivity.map(act => (
-              <div key={act.id} style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 8,
-                padding: '7px 0',
-                borderBottom: '0.5px solid var(--color-border)',
-              }}>
-                <div style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: '50%',
-                  background: activityDotColors[act.type],
-                  marginTop: 4,
-                  flexShrink: 0,
-                }} />
+              <div key={act.id} className="flex items-start gap-2 py-1.5 border-b border-border">
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: activityDotColors[act.type], marginTop: 4, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 12, color: 'var(--color-primary)' }}>
+                  <div className="text-[12px] text-primary">
                     {act.company} — {act.description}
                   </div>
-                  <div style={{ fontSize: 10, color: 'var(--color-tertiary)' }}>
+                  <div className="text-[10px] text-tertiary">
                     {timeAgo(act.createdAt)}
                   </div>
                 </div>
