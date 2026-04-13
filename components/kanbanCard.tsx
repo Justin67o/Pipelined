@@ -14,6 +14,7 @@ interface KanbanCardProps {
 
 export default function KanbanCard({ id, company, role, matchScore, followUpDate, deadline }: KanbanCardProps) {
   const dateToShow = followUpDate ?? deadline
+  const dateColor = followUpDate ? '#c49a3c' : '#d46b6b'
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id })
 
   const style = transform ? { transform: `translate(${transform.x}px, ${transform.y}px)` } : undefined
@@ -39,7 +40,7 @@ export default function KanbanCard({ id, company, role, matchScore, followUpDate
           <span />
         )}
         {dateToShow && (
-          <span className="text-[10px] text-tertiary">
+          <span className="text-[10px]" style={{ color: dateColor }}>
             {dateToShow.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })}
           </span>
         )}

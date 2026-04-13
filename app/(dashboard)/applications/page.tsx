@@ -5,6 +5,7 @@ import { ChevronDown } from 'lucide-react'
 import KanbanCard from '../../../components/kanbanCard'
 import { matchScoreColor } from '@/lib/matchScore'
 import { DndContext, DragEndEvent, useDroppable } from '@dnd-kit/core'
+import AddJobModal from '@/components/AddJobModal'
 
 type View = 'table' | 'kanban'
 type Status = 'SAVED' | 'APPLIED' | 'PHONE_SCREEN' | 'INTERVIEW' | 'OFFER' | 'REJECTED'
@@ -99,6 +100,7 @@ export default function ApplicationsPage() {
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState('')
     const [applications, setApplications] = useState(mockApplications)
+    const [showModal, setShowModal] = useState(false)
 
     function handleDragEnd(event: DragEndEvent) {
         const { active, over } = event
@@ -117,6 +119,7 @@ export default function ApplicationsPage() {
     })
 
     return (
+        <>
         <div className="flex flex-col h-full">
 
             {/* Topbar */}
@@ -139,7 +142,7 @@ export default function ApplicationsPage() {
                     <span className="text-[11px] bg-secondary border border-border rounded-full px-2.5 py-0.5 text-muted-foreground cursor-pointer">
                         Fall 2026 ▾
                     </span>
-                    <button className="text-[12px] px-3 py-1.5 rounded-lg bg-[#534AB7] text-white cursor-pointer border-0">
+                    <button onClick={() => setShowModal(true)} className="text-[12px] px-3 py-1.5 rounded-lg bg-[#534AB7] text-white cursor-pointer border-0">
                         + Add job
                     </button>
                 </div>
@@ -250,5 +253,7 @@ export default function ApplicationsPage() {
 
             </div>
         </div>
+        {showModal && <AddJobModal onClose={() => setShowModal(false)} />}
+        </>
     )
 }
