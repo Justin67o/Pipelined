@@ -52,6 +52,7 @@ export async function POST(request: Request) {
                 jobUrl: data.jobUrl ?? null,
                 jobDescription: data.jobDescription ?? null,
                 deadline: data.deadline ? new Date(data.deadline) : null,
+                dateApplied: data.dateApplied ? new Date(data.dateApplied) : null,
                 userId: user.id,
             }
         })

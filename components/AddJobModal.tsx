@@ -56,6 +56,7 @@ export default function AddJobModal({ onClose, onAdd }: AddJobModalProps) {
           jobUrl: jobUrl.trim() || null,
           jobDescription: jobDescription.trim() || null,
           deadline: deadline || null,
+          dateApplied: status !== 'SAVED' ? dateApplied || null : null,
         }),
       })
       if (res.ok) {
@@ -81,6 +82,7 @@ export default function AddJobModal({ onClose, onAdd }: AddJobModalProps) {
   const [jobUrl, setJobUrl] = useState('')
   const [deadline, setDeadline] = useState('')
   const [jobDescription, setJobDescription] = useState('')
+  const [dateApplied, setDateApplied] = useState(() => new Date().toISOString().split('T')[0])
 
   return (
     <div
@@ -173,6 +175,12 @@ export default function AddJobModal({ onClose, onAdd }: AddJobModalProps) {
                 <label className={labelClass}>Location <span className="text-[#534AB7]">*</span></label>
                 <input type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Toronto, ON or Remote" className={inputClass} />
               </div>
+              {status !== 'SAVED' && (
+                <div>
+                  <label className={labelClass}>Date applied</label>
+                  <input type="date" value={dateApplied} onChange={e => setDateApplied(e.target.value)} className={`${inputClass} [color-scheme:dark]`} />
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Salary <span className="text-tertiary">(optional)</span></label>

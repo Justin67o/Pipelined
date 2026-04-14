@@ -1,6 +1,8 @@
 'use client'
 
+import { useState, useEffect, useCallback } from 'react'
 import CyclePill from '@/components/layout/CyclePill'
+import { useCycle } from '@/lib/CycleContext'
 
 // ─── Types (mirror Prisma schema exactly) ────────────────────────────────────
 
@@ -34,278 +36,10 @@ interface Application {
   followUpDate: Date | null
   reminderSent: boolean
   jobDescription: string | null
-  notes: string | null
   activities: Activity[]
   createdAt: Date
   updatedAt: Date
 }
-
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const mockApplications: Application[] = [
-  {
-    id: 'app_1',
-    userId: 'user_1',
-    cycleId: 'cycle_1',
-    company: 'Shopify',
-    role: 'Software Engineer Intern',
-    jobUrl: 'https://jobs.lever.co/shopify/abc123',
-    status: 'INTERVIEW',
-    matchScore: 82,
-    matchedSkills: ['React', 'TypeScript', 'REST APIs', 'PostgreSQL', 'Next.js'],
-    missingSkills: ['Go', 'Kubernetes', 'gRPC'],
-    salary: '$52,000',
-    location: 'Ottawa, ON',
-    remote: false,
-    dateApplied: new Date('2026-03-28'),
-    deadline: new Date('2026-04-30'),
-    followUpDate: new Date('2026-04-09'),
-    reminderSent: false,
-    jobDescription: null,
-    notes: 'Round 1 was two pointer problems, felt good.',
-    activities: [
-      {
-        id: 'act_1',
-        applicationId: 'app_1',
-        type: 'STATUS_CHANGE',
-        description: 'Status changed to Interview',
-        createdAt: new Date('2026-04-05'),
-      },
-      {
-        id: 'act_2',
-        applicationId: 'app_1',
-        type: 'NOTE_ADDED',
-        description: 'Round 1 technical was LeetCode mediums...',
-        createdAt: new Date('2026-04-05'),
-      },
-    ],
-    createdAt: new Date('2026-03-28'),
-    updatedAt: new Date('2026-04-05'),
-  },
-  {
-    id: 'app_2',
-    userId: 'user_1',
-    cycleId: 'cycle_1',
-    company: 'Wealthsimple',
-    role: 'Backend Developer Co-op',
-    jobUrl: null,
-    status: 'PHONE_SCREEN',
-    matchScore: 76,
-    matchedSkills: ['Node.js', 'PostgreSQL', 'REST APIs'],
-    missingSkills: ['Ruby', 'Redis'],
-    salary: '$48,000',
-    location: 'Toronto, ON',
-    remote: false,
-    dateApplied: new Date('2026-03-25'),
-    deadline: null,
-    followUpDate: new Date('2026-04-11'),
-    reminderSent: false,
-    jobDescription: null,
-    notes: null,
-    activities: [
-      {
-        id: 'act_3',
-        applicationId: 'app_2',
-        type: 'STATUS_CHANGE',
-        description: 'Status changed to Phone screen',
-        createdAt: new Date('2026-04-03'),
-      },
-    ],
-    createdAt: new Date('2026-03-25'),
-    updatedAt: new Date('2026-04-03'),
-  },
-  {
-    id: 'app_3',
-    userId: 'user_1',
-    cycleId: 'cycle_1',
-    company: 'TD Bank',
-    role: 'Developer Intern',
-    jobUrl: 'https://td.wd3.myworkdayjobs.com/abc',
-    status: 'OFFER',
-    matchScore: 68,
-    matchedSkills: ['Java', 'SQL', 'REST APIs'],
-    missingSkills: ['Spring Boot'],
-    salary: '$45,000',
-    location: 'Toronto, ON',
-    remote: false,
-    dateApplied: new Date('2026-03-20'),
-    deadline: new Date('2026-04-15'),
-    followUpDate: null,
-    reminderSent: false,
-    jobDescription: null,
-    notes: null,
-    activities: [
-      {
-        id: 'act_4',
-        applicationId: 'app_3',
-        type: 'STATUS_CHANGE',
-        description: 'Status changed to Offer',
-        createdAt: new Date('2026-04-02'),
-      },
-    ],
-    createdAt: new Date('2026-03-20'),
-    updatedAt: new Date('2026-04-02'),
-  },
-  {
-    id: 'app_4',
-    userId: 'user_1',
-    cycleId: 'cycle_1',
-    company: 'Koho',
-    role: 'Full Stack Co-op',
-    jobUrl: null,
-    status: 'INTERVIEW',
-    matchScore: 79,
-    matchedSkills: ['React', 'Node.js', 'PostgreSQL'],
-    missingSkills: ['React Native'],
-    salary: null,
-    location: 'Remote',
-    remote: true,
-    dateApplied: new Date('2026-03-18'),
-    deadline: null,
-    followUpDate: new Date('2026-04-14'),
-    reminderSent: false,
-    jobDescription: null,
-    notes: null,
-    activities: [
-      {
-        id: 'act_5',
-        applicationId: 'app_4',
-        type: 'STATUS_CHANGE',
-        description: 'Status changed to Interview',
-        createdAt: new Date('2026-04-04'),
-      },
-      {
-        id: 'act_6',
-        applicationId: 'app_4',
-        type: 'NOTE_ADDED',
-        description: 'Koho — note added',
-        createdAt: new Date('2026-04-06'),
-      },
-    ],
-    createdAt: new Date('2026-03-18'),
-    updatedAt: new Date('2026-04-04'),
-  },
-  {
-    id: 'app_5',
-    userId: 'user_1',
-    cycleId: 'cycle_1',
-    company: 'Relay',
-    role: 'Frontend Engineer Intern',
-    jobUrl: null,
-    status: 'PHONE_SCREEN',
-    matchScore: 71,
-    matchedSkills: ['React', 'TypeScript'],
-    missingSkills: ['Vue', 'GraphQL'],
-    salary: null,
-    location: 'Toronto, ON',
-    remote: false,
-    dateApplied: new Date('2026-03-12'),
-    deadline: null,
-    followUpDate: new Date('2026-04-16'),
-    reminderSent: false,
-    jobDescription: null,
-    notes: null,
-    activities: [
-      {
-        id: 'act_7',
-        applicationId: 'app_5',
-        type: 'STATUS_CHANGE',
-        description: 'Status changed to Phone screen',
-        createdAt: new Date('2026-04-01'),
-      },
-    ],
-    createdAt: new Date('2026-03-12'),
-    updatedAt: new Date('2026-04-01'),
-  },
-  {
-    id: 'app_6',
-    userId: 'user_1',
-    cycleId: 'cycle_1',
-    company: 'Google',
-    role: 'SWE Intern',
-    jobUrl: null,
-    status: 'REJECTED',
-    matchScore: 55,
-    matchedSkills: ['Python', 'SQL'],
-    missingSkills: ['C++', 'Distributed Systems'],
-    salary: null,
-    location: 'Waterloo, ON',
-    remote: false,
-    dateApplied: new Date('2026-03-15'),
-    deadline: null,
-    followUpDate: null,
-    reminderSent: false,
-    jobDescription: null,
-    notes: null,
-    activities: [
-      {
-        id: 'act_8',
-        applicationId: 'app_6',
-        type: 'STATUS_CHANGE',
-        description: 'Status changed to Rejected',
-        createdAt: new Date('2026-04-03'),
-      },
-    ],
-    createdAt: new Date('2026-03-15'),
-    updatedAt: new Date('2026-04-03'),
-  },
-  {
-    id: 'app_7',
-    userId: 'user_1',
-    cycleId: 'cycle_1',
-    company: 'Stripe',
-    role: 'Backend Co-op',
-    jobUrl: null,
-    status: 'REJECTED',
-    matchScore: 61,
-    matchedSkills: ['Node.js', 'REST APIs'],
-    missingSkills: ['Ruby', 'Go'],
-    salary: null,
-    location: 'Remote',
-    remote: true,
-    dateApplied: new Date('2026-03-10'),
-    deadline: null,
-    followUpDate: null,
-    reminderSent: false,
-    jobDescription: null,
-    notes: null,
-    activities: [
-      {
-        id: 'act_9',
-        applicationId: 'app_7',
-        type: 'STATUS_CHANGE',
-        description: 'Status changed to Rejected',
-        createdAt: new Date('2026-03-30'),
-      },
-    ],
-    createdAt: new Date('2026-03-10'),
-    updatedAt: new Date('2026-03-30'),
-  },
-  {
-    id: 'app_8',
-    userId: 'user_1',
-    cycleId: 'cycle_1',
-    company: 'D2L',
-    role: 'Software Dev Co-op',
-    jobUrl: null,
-    status: 'APPLIED',
-    matchScore: 73,
-    matchedSkills: ['React', 'TypeScript', 'REST APIs'],
-    missingSkills: ['Angular'],
-    salary: null,
-    location: 'Kitchener, ON',
-    remote: false,
-    dateApplied: new Date('2026-03-08'),
-    deadline: null,
-    followUpDate: null,
-    reminderSent: false,
-    jobDescription: null,
-    notes: null,
-    activities: [],
-    createdAt: new Date('2026-03-08'),
-    updatedAt: new Date('2026-03-08'),
-  },
-]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -389,11 +123,37 @@ function StatCard({ label, value, sub }: { label: string; value: string; sub?: s
 // ─── Dashboard Page ───────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const stats = computeStats(mockApplications)
+  const { selectedCycleId } = useCycle()
+  const [applications, setApplications] = useState<Application[]>([])
 
-  const activePipeline = mockApplications
-    .filter(a => KANBAN_STATUSES.includes(a.status))
-    .sort((a, b) => {
+  const fetchApplications = useCallback(async () => {
+    const url = selectedCycleId
+      ? `/api/applications?cycleId=${selectedCycleId}`
+      : '/api/applications'
+    try {
+      const res = await fetch(url)
+      const data = await res.json()
+      setApplications((data.data ?? []).map((a: Application & { dateApplied: string | null, deadline: string | null, followUpDate: string | null, createdAt: string, updatedAt: string, activities: (Activity & { createdAt: string })[] }) => ({
+        ...a,
+        dateApplied: a.dateApplied ? new Date(a.dateApplied) : null,
+        deadline: a.deadline ? new Date(a.deadline) : null,
+        followUpDate: a.followUpDate ? new Date(a.followUpDate) : null,
+        createdAt: new Date(a.createdAt),
+        updatedAt: new Date(a.updatedAt),
+        activities: a.activities.map(act => ({ ...act, createdAt: new Date(act.createdAt) })),
+      })))
+    } catch {}
+  }, [selectedCycleId])
+
+  useEffect(() => {
+    fetchApplications()
+  }, [fetchApplications])
+
+  const stats = computeStats(applications)
+
+  const activePipeline = applications
+    .filter((a: Application) => KANBAN_STATUSES.includes(a.status))
+    .sort((a: Application, b: Application) => {
       const aDate = getNextDate(a)
       const bDate = getNextDate(b)
       if (!aDate && !bDate) return 0
@@ -402,8 +162,8 @@ export default function DashboardPage() {
       return aDate.getTime() - bDate.getTime()
     })
 
-  const recentActivity = mockApplications
-    .flatMap(a => a.activities.map(act => ({ ...act, company: a.company })))
+  const recentActivity = applications
+    .flatMap((a: Application) => a.activities.map((act: Activity) => ({ ...act, company: a.company })))
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(0, 10)
 

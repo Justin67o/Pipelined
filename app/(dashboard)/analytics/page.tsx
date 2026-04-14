@@ -1,6 +1,8 @@
 'use client'
 
+import { useState, useEffect, useCallback } from 'react'
 import CyclePill from '@/components/layout/CyclePill'
+import { useCycle } from '@/lib/CycleContext'
 
 import {
   BarChart,
@@ -27,23 +29,6 @@ interface Application {
   dateApplied: Date | null
   createdAt: Date
 }
-
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const mockApplications: Application[] = [
-  { id: 'app_1',  company: 'Shopify',      role: 'Software Engineer Intern',  status: 'INTERVIEW',    matchScore: 82,   dateApplied: new Date('2026-03-28'), createdAt: new Date('2026-03-28') },
-  { id: 'app_2',  company: 'Wealthsimple', role: 'Backend Developer Co-op',   status: 'PHONE_SCREEN', matchScore: 76,   dateApplied: new Date('2026-03-25'), createdAt: new Date('2026-03-25') },
-  { id: 'app_3',  company: 'TD Bank',      role: 'Developer Intern',          status: 'OFFER',        matchScore: 68,   dateApplied: new Date('2026-03-20'), createdAt: new Date('2026-03-20') },
-  { id: 'app_4',  company: 'Koho',         role: 'Full Stack Co-op',          status: 'INTERVIEW',    matchScore: 79,   dateApplied: new Date('2026-03-18'), createdAt: new Date('2026-03-18') },
-  { id: 'app_5',  company: 'Relay',        role: 'Frontend Engineer Intern',  status: 'PHONE_SCREEN', matchScore: 71,   dateApplied: new Date('2026-03-12'), createdAt: new Date('2026-03-12') },
-  { id: 'app_6',  company: 'Google',       role: 'SWE Intern',                status: 'REJECTED',     matchScore: 55,   dateApplied: new Date('2026-03-15'), createdAt: new Date('2026-03-15') },
-  { id: 'app_7',  company: 'Stripe',       role: 'Backend Co-op',             status: 'REJECTED',     matchScore: 61,   dateApplied: new Date('2026-03-10'), createdAt: new Date('2026-03-10') },
-  { id: 'app_8',  company: 'D2L',          role: 'Software Dev Co-op',        status: 'APPLIED',      matchScore: 73,   dateApplied: new Date('2026-03-08'), createdAt: new Date('2026-03-08') },
-  { id: 'app_9',  company: 'Vidyard',      role: 'Dev Co-op',                 status: 'APPLIED',      matchScore: 69,   dateApplied: new Date('2026-03-05'), createdAt: new Date('2026-03-05') },
-  { id: 'app_10', company: 'Faire',        role: 'Software Engineer Co-op',   status: 'SAVED',        matchScore: null, dateApplied: null,                   createdAt: new Date('2026-03-01') },
-  { id: 'app_11', company: 'Miovision',    role: 'Backend Developer Intern',  status: 'APPLIED',      matchScore: 74,   dateApplied: new Date('2026-03-22'), createdAt: new Date('2026-03-22') },
-  { id: 'app_12', company: 'OpenText',     role: 'Software Dev Co-op',        status: 'APPLIED',      matchScore: 66,   dateApplied: new Date('2026-03-19'), createdAt: new Date('2026-03-19') },
-]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -89,7 +74,8 @@ function computeResponseRate(apps: Application[]) {
 
   applied.forEach(app => {
     const d = app.dateApplied!
-    const week = `Week ${Math.ceil(d.getDate() / 7)} Mar`
+    const month = d.toLocaleString('en-US', { month: 'short' })
+    const week = `Week ${Math.ceil(d.getDate() / 7)} ${month}`
     if (!byWeek[week]) byWeek[week] = { applied: 0, responded: 0 }
     byWeek[week].applied++
     if (['PHONE_SCREEN', 'INTERVIEW', 'OFFER', 'REJECTED'].includes(app.status)) {
@@ -142,10 +128,32 @@ function SectionCard({ title, children }: { title: string; children: React.React
 // ─── Analytics Page ───────────────────────────────────────────────────────────
 
 export default function AnalyticsPage() {
-  const stats = computeStats(mockApplications)
-  const funnelData = computeFunnel(mockApplications)
-  const responseRateData = computeResponseRate(mockApplications)
-  const maxCount = Math.max(...funnelData.map(d => d.count))
+  const { selectedCycleId } = useCycle()
+  const [applications, setApplications] = useState<Application[]>([])
+
+  const fetchApplications = useCallback(async () => {
+    const url = selectedCycleId
+      ? `/api/applications?cycleId=${selectedCycleId}`
+      : '/api/applications'
+    try {
+      const res = await fetch(url)
+      const data = await res.json()
+      setApplications((data.data ?? []).map((a: Application & { dateApplied: string | null, createdAt: string }) => ({
+        ...a,
+        dateApplied: a.dateApplied ? new Date(a.dateApplied) : null,
+        createdAt: new Date(a.createdAt),
+      })))
+    } catch {}
+  }, [selectedCycleId])
+
+  useEffect(() => {
+    fetchApplications()
+  }, [fetchApplications])
+
+  const stats = computeStats(applications)
+  const funnelData = computeFunnel(applications)
+  const responseRateData = computeResponseRate(applications)
+  const maxCount = funnelData.length > 0 ? Math.max(...funnelData.map(d => d.count)) : 0
 
   return (
     <div className="flex flex-col h-full">
@@ -250,11 +258,11 @@ export default function AnalyticsPage() {
           <ResponsiveContainer width="100%" height={180}>
             <BarChart
               data={[
-                { range: '0–20',   count: mockApplications.filter(a => a.matchScore !== null && a.matchScore <= 20).length },
-                { range: '21–40',  count: mockApplications.filter(a => a.matchScore !== null && a.matchScore > 20 && a.matchScore <= 40).length },
-                { range: '41–60',  count: mockApplications.filter(a => a.matchScore !== null && a.matchScore > 40 && a.matchScore <= 60).length },
-                { range: '61–80',  count: mockApplications.filter(a => a.matchScore !== null && a.matchScore > 60 && a.matchScore <= 80).length },
-                { range: '81–100', count: mockApplications.filter(a => a.matchScore !== null && a.matchScore > 80).length },
+                { range: '0–20',   count: applications.filter(a => a.matchScore !== null && a.matchScore <= 20).length },
+                { range: '21–40',  count: applications.filter(a => a.matchScore !== null && a.matchScore > 20 && a.matchScore <= 40).length },
+                { range: '41–60',  count: applications.filter(a => a.matchScore !== null && a.matchScore > 40 && a.matchScore <= 60).length },
+                { range: '61–80',  count: applications.filter(a => a.matchScore !== null && a.matchScore > 60 && a.matchScore <= 80).length },
+                { range: '81–100', count: applications.filter(a => a.matchScore !== null && a.matchScore > 80).length },
               ]}
               margin={{ top: 4, right: 8, bottom: 4, left: -20 }}
             >

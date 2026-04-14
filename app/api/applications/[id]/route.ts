@@ -38,6 +38,17 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
 
     try {
+        const current = await prisma.application.findFirst({
+            where: { id, userId: user.id },
+            select: { status: true, dateApplied: true },
+        })
+
+        const autoSetDateApplied =
+            data.status !== undefined &&
+            data.status !== 'SAVED' &&
+            current?.status === 'SAVED' &&
+            !current?.dateApplied
+
         const application = await prisma.application.update({
             where: { id: id, userId: user.id },
             data: {
@@ -48,6 +59,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
                 ...(data.location !== undefined && { location: data.location }),
                 ...(data.followUpDate !== undefined && { followUpDate: new Date(data.followUpDate) }),
                 ...(data.deadline !== undefined && { deadline: new Date(data.deadline) }),
+                ...(data.dateApplied !== undefined && { dateApplied: data.dateApplied ? new Date(data.dateApplied) : null }),
+                ...(autoSetDateApplied && { dateApplied: new Date() }),
             }
         })
 
