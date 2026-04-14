@@ -310,12 +310,12 @@ const mockApplications: Application[] = [
 const KANBAN_STATUSES: Status[] = ['PHONE_SCREEN', 'INTERVIEW', 'OFFER']
 
 const statusColors: Record<Status, { bg: string; text: string }> = {
-  SAVED:        { bg: '#F1EFE8', text: '#5F5E5A' },
-  APPLIED:      { bg: '#E6F1FB', text: '#185FA5' },
-  PHONE_SCREEN: { bg: '#E1F5EE', text: '#085041' },
-  INTERVIEW:    { bg: '#EEEDFE', text: '#3C3489' },
-  OFFER:        { bg: '#EAF3DE', text: '#27500A' },
-  REJECTED:     { bg: '#FCEBEB', text: '#A32D2D' },
+  SAVED:        { bg: '#232323', text: '#8d8d9a' },
+  APPLIED:      { bg: '#1a2d42', text: '#5ba3d9' },
+  PHONE_SCREEN: { bg: '#152820', text: '#4aad8a' },
+  INTERVIEW:    { bg: '#1e1d3d', text: '#8b85e8' },
+  OFFER:        { bg: '#162208', text: '#6ab52b' },
+  REJECTED:     { bg: '#2d1515', text: '#e06060' },
 }
 
 const statusLabels: Record<Status, string> = {

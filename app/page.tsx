@@ -1,5 +1,8 @@
 import Link from "next/link"
 import { ArrowRight, LayoutGrid, FileText, Sparkles } from "lucide-react"
+import { getServerSession } from "next-auth"
+import { redirect } from "next/navigation"
+import { authOptions } from "./api/auth/[...nextauth]/route"
 
 const PREVIEW_APPS = [
   { company: "Shopify", role: "Software Engineer Intern", status: "INTERVIEW", match: 82, location: "Ottawa, ON" },
@@ -30,7 +33,10 @@ function MatchScore({ score }: { score: number }) {
   return <span style={{ color, fontSize: 11, fontWeight: 600 }}>{score}%</span>
 }
 
-export default function LandingPage() {
+export default async function LandingPage() {
+
+  const session = await getServerSession(authOptions);
+  if(session?.user?.email) redirect("/dashboard")
   return (
     <div className="min-h-screen bg-background text-primary">
       {/* Nav */}
