@@ -92,6 +92,7 @@ export default function ApplicationsPage() {
     const [statusFilter, setStatusFilter] = useState('')
     const [applications, setApplications] = useState<Application[]>([])
     const [showModal, setShowModal] = useState(false)
+    const [contextMenu, setContextMenu] = useState<{ x: number; y: number; appId: string } | null>(null)
     const router = useRouter()
 
     const fetchApplications = useCallback(async () => {
@@ -116,12 +117,28 @@ export default function ApplicationsPage() {
         fetchApplications()
     }, [fetchApplications])
 
-function handleDragEnd(event: DragEndEvent) {
+async function handleReject(appId: string) {
+    setApplications(prev => prev.map(app => app.id === appId ? { ...app, status: 'REJECTED' } : app))
+    setContextMenu(null)
+    await fetch(`/api/applications/${appId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'REJECTED' }),
+    })
+}
+
+async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (!over || active.id === over.id) return
+    const newStatus = over.id as Status
     setApplications(prev => prev.map(app =>
-        app.id === active.id ? { ...app, status: over.id as Status } : app
+        app.id === active.id ? { ...app, status: newStatus } : app
     ))
+    await fetch(`/api/applications/${active.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+    })
 }
 
 const filtered = applications.filter(a => {
@@ -209,6 +226,7 @@ return (
                                     <div
                                         key={app.id}
                                         onClick={() => router.push(`/applications/${app.id}`)}
+                                        onContextMenu={e => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, appId: app.id }) }}
                                         className={`grid items-center px-4 py-2.5 cursor-pointer hover:bg-secondary transition-colors ${i < filtered.length - 1 ? 'border-b border-border' : ''}`}
                                         style={{ gridTemplateColumns: COL }}
                                     >
@@ -243,7 +261,7 @@ return (
                     <DndContext onDragEnd={handleDragEnd}>
                         <div className="grid grid-cols-4 gap-3 h-full">
                             {KANBAN_COLUMNS.map(({ status, label }) => {
-                                const cards = applications.filter(a => a.status === status)
+                                const cards = status === 'REJECTED' ? [] : applications.filter(a => a.status === status)
                                 return (
                                     <KanbanColumn key={status} status={status} label={label}>
                                         {cards.map(app => (
@@ -267,6 +285,22 @@ return (
             </div>
         </div>
         {showModal && <AddJobModal onClose={() => setShowModal(false)} onAdd={fetchApplications} />}
+        {contextMenu && (
+            <>
+                <div className="fixed inset-0 z-40" onClick={() => setContextMenu(null)} />
+                <div
+                    className="fixed z-50 bg-background border border-border rounded-lg shadow-xl py-1 min-w-[160px]"
+                    style={{ top: contextMenu.y, left: contextMenu.x }}
+                >
+                    <button
+                        onClick={() => handleReject(contextMenu.appId)}
+                        className="w-full text-left px-3 py-1.5 text-[12px] text-[#e06060] hover:bg-secondary transition-colors cursor-pointer border-0 bg-transparent"
+                    >
+                        Mark as rejected
+                    </button>
+                </div>
+            </>
+        )}
     </>
 )
 }

@@ -37,26 +37,26 @@ const STATUS_ORDER: Status[] = ['SAVED', 'APPLIED', 'PHONE_SCREEN', 'INTERVIEW',
 const statusLabels: Record<Status, string> = {
   SAVED:        'Saved',
   APPLIED:      'Applied',
-  PHONE_SCREEN: 'Phone screen',
+  PHONE_SCREEN: 'Screening',
   INTERVIEW:    'Interview',
   OFFER:        'Offer',
   REJECTED:     'Rejected',
 }
 
 const funnelColors: Record<string, string> = {
-  Saved:          '#18202e',
-  Applied:        '#1d1840',
-  'Phone screen': '#0d2318',
-  Interview:      '#1d1840',
-  Offer:          '#142108',
+  Saved:      '#232323',
+  Applied:    '#1a2d42',
+  Screening:  '#152820',
+  Interview:  '#1e1d3d',
+  Offer:      '#162208',
 }
 
 const funnelTextColors: Record<string, string> = {
-  Saved:          '#6d9ed5',
-  Applied:        '#8b80df',
-  'Phone screen': '#50a07a',
-  Interview:      '#8b80df',
-  Offer:          '#74b34e',
+  Saved:      '#8d8d9a',
+  Applied:    '#5ba3d9',
+  Screening:  '#4aad8a',
+  Interview:  '#8b85e8',
+  Offer:      '#6ab52b',
 }
 
 function computeFunnel(apps: Application[]) {

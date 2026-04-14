@@ -57,7 +57,7 @@ const statusColors: Record<Status, { bg: string; text: string }> = {
 const statusLabels: Record<Status, string> = {
   SAVED:        'Saved',
   APPLIED:      'Applied',
-  PHONE_SCREEN: 'Phone screen',
+  PHONE_SCREEN: 'Screening',
   INTERVIEW:    'Interview',
   OFFER:        'Offer',
   REJECTED:     'Rejected',
