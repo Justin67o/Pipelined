@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { requireAuthentication } from '@/lib/requireAuth';
+import { matchResume } from '@/lib/ml-client';
 
 
 export async function GET(request: Request) {
@@ -10,34 +11,28 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const cycleId = searchParams.get('cycleId');
 
-
     try {
         const applications = await prisma.application.findMany({
             where: {
                 userId: user.id,
-                ...(cycleId ? { cycleId }: {})
+                ...(cycleId ? { cycleId } : {})
             },
             include: { activities: true },
-            orderBy: { createdAt: 'desc'}
+            orderBy: { createdAt: 'desc' }
         });
 
         return NextResponse.json({ message: 'Applications retrieved successfully', data: applications }, { status: 200 });
     } catch (error) {
         if (error instanceof Error) {
-            console.log("Error retrieving accounts:", error);
             return NextResponse.json({ message: `Error retrieving applications, ${error.message}` }, { status: 500 });
         }
     }
-
 }
 
-// create a new account
 export async function POST(request: Request) {
     const data = await request.json();
     const user = await requireAuthentication();
     if (!user) return new Response("Unauthorized", { status: 401 });
-    console.log("Received data for new application:", data);
-
 
     try {
         const application = await prisma.application.create({
@@ -57,6 +52,23 @@ export async function POST(request: Request) {
             }
         })
 
+        // if there is a job description and the user has a resume uploaded
+        if (data.jobDescription && user.resumeText) {
+
+            // call the microservice to match the resume to the job description using cosine similarity
+            const result = await matchResume(user.resumeText, data.jobDescription)
+
+            // store the results of match score, matched skills, and missing skills in the application
+            await prisma.application.update({
+                where: { id: application.id },
+                data: {
+                    matchScore: result.matchScore,
+                    matchedSkills: result.matchedSkills,
+                    missingSkills: result.missingSkills,
+                }
+            })
+        }
+
         return NextResponse.json(application, { status: 201 });
     } catch (error) {
         if (error instanceof Error) {
@@ -64,4 +76,3 @@ export async function POST(request: Request) {
         }
     }
 }
-
