@@ -42,7 +42,6 @@ export async function PATCH(request: Request, { params }: { params: { id: string
             where: { id: id, userId: user.id },
             data: {
                 ...(data.status !== undefined && { status: data.status }),
-                ...(data.notes !== undefined && { notes: data.notes }),
                 ...(data.company !== undefined && { company: data.company }),
                 ...(data.role !== undefined && { role: data.role }),
                 ...(data.salary !== undefined && { salary: data.salary }),
@@ -51,6 +50,16 @@ export async function PATCH(request: Request, { params }: { params: { id: string
                 ...(data.deadline !== undefined && { deadline: new Date(data.deadline) }),
             }
         })
+
+        if (data.notes !== undefined && data.notes.trim()) {
+            await prisma.activity.create({
+                data: {
+                    applicationId: id,
+                    type: 'NOTE_ADDED',
+                    description: `Note: ${data.notes.trim()}`,
+                }
+            })
+        }
 
         return NextResponse.json(application, { status: 200 });
     } catch (error) {

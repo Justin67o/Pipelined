@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import CyclePill from '@/components/layout/CyclePill'
+import { useCycle } from '@/lib/CycleContext'
 
 import KanbanCard from '../../../components/kanbanCard'
 import { matchScoreColor } from '@/lib/matchScore'
@@ -26,25 +27,11 @@ interface Application {
     deadline: Date | null
 }
 
-const mockApplications: Application[] = [
-    { id: 'app_1', company: 'Shopify', role: 'Software Engineer Intern', status: 'INTERVIEW', matchScore: 82, location: 'Ottawa, ON', remote: false, dateApplied: new Date('2026-03-28'), followUpDate: new Date('2026-04-09'), deadline: new Date('2026-04-30') },
-    { id: 'app_2', company: 'Wealthsimple', role: 'Backend Developer Co-op', status: 'PHONE_SCREEN', matchScore: 76, location: 'Toronto, ON', remote: false, dateApplied: new Date('2026-03-25'), followUpDate: new Date('2026-04-11'), deadline: null },
-    { id: 'app_3', company: 'TD Bank', role: 'Developer Intern', status: 'OFFER', matchScore: 68, location: 'Toronto, ON', remote: false, dateApplied: new Date('2026-03-20'), followUpDate: null, deadline: new Date('2026-04-15') },
-    { id: 'app_4', company: 'Koho', role: 'Full Stack Co-op', status: 'INTERVIEW', matchScore: 79, location: null, remote: true, dateApplied: new Date('2026-03-18'), followUpDate: new Date('2026-04-14'), deadline: null },
-    { id: 'app_5', company: 'Relay', role: 'Frontend Engineer Intern', status: 'PHONE_SCREEN', matchScore: 71, location: 'Toronto, ON', remote: false, dateApplied: new Date('2026-03-12'), followUpDate: new Date('2026-04-16'), deadline: null },
-    { id: 'app_6', company: 'Google', role: 'SWE Intern', status: 'REJECTED', matchScore: 55, location: 'Waterloo, ON', remote: false, dateApplied: new Date('2026-03-15'), followUpDate: null, deadline: null },
-    { id: 'app_7', company: 'Stripe', role: 'Backend Co-op', status: 'REJECTED', matchScore: 61, location: null, remote: true, dateApplied: new Date('2026-03-10'), followUpDate: null, deadline: null },
-    { id: 'app_8', company: 'D2L', role: 'Software Dev Co-op', status: 'APPLIED', matchScore: 73, location: 'Kitchener, ON', remote: false, dateApplied: new Date('2026-03-08'), followUpDate: null, deadline: null },
-    { id: 'app_9', company: 'Vidyard', role: 'Dev Co-op', status: 'APPLIED', matchScore: 69, location: 'Kitchener, ON', remote: false, dateApplied: new Date('2026-03-05'), followUpDate: null, deadline: null },
-    { id: 'app_10', company: 'Faire', role: 'Software Engineer Co-op', status: 'SAVED', matchScore: null, location: 'Remote', remote: true, dateApplied: null, followUpDate: null, deadline: null },
-    { id: 'app_11', company: 'Miovision', role: 'Backend Developer Intern', status: 'APPLIED', matchScore: 74, location: 'Waterloo, ON', remote: false, dateApplied: new Date('2026-03-22'), followUpDate: null, deadline: null },
-    { id: 'app_12', company: 'OpenText', role: 'Software Dev Co-op', status: 'APPLIED', matchScore: 66, location: 'Waterloo, ON', remote: false, dateApplied: new Date('2026-03-19'), followUpDate: null, deadline: null },
-]
 
 const statusLabels: Record<Status, string> = {
     SAVED: 'Saved',
     APPLIED: 'Applied',
-    PHONE_SCREEN: 'Phone screen',
+    PHONE_SCREEN: 'Screening',
     INTERVIEW: 'Interview',
     OFFER: 'Offer',
     REJECTED: 'Rejected',
@@ -99,12 +86,35 @@ function Badge({ status }: { status: Status }) {
 const COL = '2fr 2fr 1fr 1fr 1.5fr 1fr'
 
 export default function ApplicationsPage() {
+    const { selectedCycleId } = useCycle()
     const [view, setView] = useState<View>('table')
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState('')
-    const [applications, setApplications] = useState(mockApplications)
+    const [applications, setApplications] = useState<Application[]>([])
     const [showModal, setShowModal] = useState(false)
     const router = useRouter()
+
+    const fetchApplications = useCallback(async () => {
+        const url = selectedCycleId
+            ? `/api/applications?cycleId=${selectedCycleId}`
+            : '/api/applications'
+        try {
+            const res = await fetch(url)
+            const data = await res.json()
+            setApplications((data.data ?? []).map((a: Application & { dateApplied: string | null, followUpDate: string | null, deadline: string | null }) => ({
+                ...a,
+                dateApplied: a.dateApplied ? new Date(a.dateApplied) : null,
+                followUpDate: a.followUpDate ? new Date(a.followUpDate) : null,
+                deadline: a.deadline ? new Date(a.deadline) : null,
+            })))
+        } catch {
+            // keep existing state
+        }
+    }, [selectedCycleId])
+
+    useEffect(() => {
+        fetchApplications()
+    }, [fetchApplications])
 
 function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
@@ -256,7 +266,7 @@ return (
 
             </div>
         </div>
-        {showModal && <AddJobModal onClose={() => setShowModal(false)} />}
+        {showModal && <AddJobModal onClose={() => setShowModal(false)} onAdd={fetchApplications} />}
     </>
 )
 }

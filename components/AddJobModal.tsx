@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { X, ChevronDown, Check } from 'lucide-react'
+import { useCycle } from '@/lib/CycleContext'
 
 type Status = 'SAVED' | 'APPLIED' | 'PHONE_SCREEN' | 'INTERVIEW' | 'OFFER' | 'REJECTED'
 
@@ -24,14 +25,47 @@ type Tab = typeof TABS[number]['id']
 
 interface AddJobModalProps {
   onClose: () => void
+  onAdd: () => void
 }
 
 const inputClass = 'w-full bg-secondary border border-border rounded-lg px-3 py-1.5 text-[12px] text-primary placeholder:text-muted-foreground outline-none'
 const labelClass = 'block text-[11px] text-muted-foreground mb-1'
 
-export default function AddJobModal({ onClose }: AddJobModalProps) {
+export default function AddJobModal({ onClose, onAdd }: AddJobModalProps) {
+  const { selectedCycleId } = useCycle()
   const [activeTab, setActiveTab] = useState<Tab>('url')
   const [status, setStatus] = useState<Status>('SAVED')
+  const [saving, setSaving] = useState(false)
+
+  async function handleSave() {
+    if (!company.trim() || !role.trim()) return
+    setSaving(true)
+    try {
+      const isRemote = location.trim().toLowerCase() === 'remote'
+      const res = await fetch('/api/applications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company: company.trim(),
+          role: role.trim(),
+          status,
+          cycleId: selectedCycleId,
+          location: isRemote ? null : location.trim() || null,
+          remote: isRemote,
+          salary: salary.trim() || null,
+          jobUrl: jobUrl.trim() || null,
+          jobDescription: jobDescription.trim() || null,
+          deadline: deadline || null,
+        }),
+      })
+      if (res.ok) {
+        onAdd()
+        onClose()
+      }
+    } finally {
+      setSaving(false)
+    }
+  }
 
   // Paste URL tab
   const [pasteUrl, setPasteUrl] = useState('')
@@ -142,7 +176,21 @@ export default function AddJobModal({ onClose }: AddJobModalProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Salary <span className="text-tertiary">(optional)</span></label>
-                  <input type="text" value={salary} onChange={e => setSalary(e.target.value)} placeholder="e.g. $52,000" className={inputClass} />
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">$</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={salary}
+                      onChange={e => {
+                        const val = e.target.value
+                        if (val === '' || (/^\d+(\.\d{0,2})?$/.test(val) && Number(val) >= 0)) setSalary(val)
+                      }}
+                      placeholder="52000"
+                      className={`${inputClass} pl-6`}
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className={labelClass}>Deadline <span className="text-tertiary">(optional)</span></label>
@@ -181,8 +229,12 @@ export default function AddJobModal({ onClose }: AddJobModalProps) {
               >
                 Cancel
               </button>
-              <button className="text-[11px] px-3 py-1.5 rounded-lg bg-[#534AB7] text-white border-0 cursor-pointer">
-                Save application
+              <button
+                onClick={handleSave}
+                disabled={saving || activeTab !== 'manual' || !company.trim() || !role.trim()}
+                className="text-[11px] px-3 py-1.5 rounded-lg bg-[#534AB7] text-white border-0 cursor-pointer disabled:opacity-50"
+              >
+                {saving ? 'Saving…' : 'Save application'}
               </button>
             </div>
           </div>

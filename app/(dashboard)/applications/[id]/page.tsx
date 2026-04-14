@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronDown, ExternalLink } from 'lucide-react'
 import { matchScoreColor } from '@/lib/matchScore'
+import { useRouter, useParams } from 'next/navigation'
+import { useCycle } from '@/lib/CycleContext'
 
 type Status = 'SAVED' | 'APPLIED' | 'PHONE_SCREEN' | 'INTERVIEW' | 'OFFER' | 'REJECTED'
 type ActivityType = 'STATUS_CHANGE' | 'NOTE_ADDED' | 'REMINDER_SET'
@@ -30,36 +32,8 @@ interface Application {
   deadline: Date | null
   followUpDate: Date | null
   jobDescription: string | null
-  notes: string | null
   cycleId: string | null
   activities: Activity[]
-}
-
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const mockApplication: Application = {
-  id: 'app_1',
-  company: 'Shopify',
-  role: 'Software Engineer Intern',
-  status: 'INTERVIEW',
-  matchScore: 82,
-  matchedSkills: ['React', 'TypeScript', 'REST APIs', 'PostgreSQL', 'Next.js'],
-  missingSkills: ['Go', 'Kubernetes', 'gRPC'],
-  salary: '$52,000',
-  location: 'Ottawa, ON',
-  remote: false,
-  jobUrl: 'https://jobs.lever.co/shopify/abc123',
-  dateApplied: new Date('2026-03-28'),
-  deadline: new Date('2026-04-30'),
-  followUpDate: new Date('2026-04-09'),
-  jobDescription: `We are looking for a Software Engineer Intern to join our team at Shopify. You will work on building and scaling commerce infrastructure used by millions of merchants worldwide.\n\nResponsibilities:\n- Build and maintain features across Shopify's core platform\n- Collaborate with senior engineers on architecture decisions\n- Write clean, well-tested code in a fast-paced environment\n\nRequirements:\n- Currently enrolled in a Computer Science or related program\n- Strong understanding of data structures and algorithms\n- Experience with React, TypeScript, or similar technologies`,
-  notes: 'Round 1 was two pointer problems, felt good.',
-  cycleId: 'cycle_1',
-  activities: [
-    { id: 'act_1', type: 'STATUS_CHANGE', description: 'Status changed to Interview', createdAt: new Date('2026-04-05') },
-    { id: 'act_2', type: 'NOTE_ADDED',    description: 'Note added: Round 1 technical was LeetCode mediums', createdAt: new Date('2026-04-05') },
-    { id: 'act_3', type: 'STATUS_CHANGE', description: 'Status changed to Applied', createdAt: new Date('2026-03-28') },
-  ],
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -144,16 +118,80 @@ function SectionCard({ title, children }: { title: string; children: React.React
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ApplicationDetailPage() {
-  const app = mockApplication
-  const [status, setStatus] = useState<Status>(app.status)
-  const [notes, setNotes] = useState(app.notes ?? '')
+  const { id } = useParams<{ id: string }>()
+  const router = useRouter()
+  const { cycles } = useCycle()
+  const [app, setApp] = useState<Application | null>(null)
+  const [status, setStatus] = useState<Status>('SAVED')
+  const [notes, setNotes] = useState('')
+  const [savingNote, setSavingNote] = useState(false)
+
+  useEffect(() => {
+    fetch(`/api/applications/${id}`)
+      .then(r => r.json())
+      .then(({ data }) => {
+        if (!data) return
+        const parsed: Application = {
+          ...data,
+          dateApplied: data.dateApplied ? new Date(data.dateApplied) : null,
+          followUpDate: data.followUpDate ? new Date(data.followUpDate) : null,
+          deadline: data.deadline ? new Date(data.deadline) : null,
+          activities: (data.activities ?? []).map((a: Activity & { createdAt: string }) => ({
+            ...a,
+            createdAt: new Date(a.createdAt),
+          })),
+        }
+        setApp(parsed)
+        setStatus(parsed.status)
+      })
+      .catch(() => {})
+  }, [id])
+
+  async function handleStatusChange(newStatus: Status) {
+    setStatus(newStatus)
+    await fetch(`/api/applications/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    })
+  }
+
+  async function handleSaveNote() {
+    setSavingNote(true)
+    try {
+      const res = await fetch(`/api/applications/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes }),
+      })
+      if (res.ok) {
+        setNotes('')
+        const r = await fetch(`/api/applications/${id}`)
+        const { data } = await r.json()
+        if (data) setApp(prev => prev ? {
+          ...prev,
+          activities: (data.activities ?? []).map((a: Activity & { createdAt: string }) => ({
+            ...a,
+            createdAt: new Date(a.createdAt),
+          })),
+        } : prev)
+      }
+    } finally {
+      setSavingNote(false)
+    }
+  }
+
+  if (!app) return <div className="flex items-center justify-center h-full text-[12px] text-muted-foreground">Loading…</div>
+
+  const cycleName = app.cycleId ? (cycles.find(c => c.id === app.cycleId) ?? null) : null
 
   return (
     <div className="flex flex-col h-full">
 
       {/* Topbar */}
       <div className="h-11 border-b border-border flex items-center px-4 bg-background shrink-0 gap-2">
-        <span className="text-[13px] text-muted-foreground cursor-pointer hover:text-primary transition-colors">Applications</span>
+        <span className="text-[13px] text-muted-foreground cursor-pointer hover:text-primary transition-colors"
+        onClick={() => router.push("/applications")}>Applications</span>
         <span className="text-[13px] text-muted-foreground">/</span>
         <span className="text-[13px] font-medium text-primary">{app.company}</span>
       </div>
@@ -237,7 +275,7 @@ export default function ApplicationDetailPage() {
                 <div className="relative mb-2">
                   <select
                     value={status}
-                    onChange={e => setStatus(e.target.value as Status)}
+                    onChange={e => handleStatusChange(e.target.value as Status)}
                     className="w-full bg-secondary border border-border rounded-lg px-3 py-1.5 text-[12px] text-primary appearance-none cursor-pointer pr-7 outline-none"
                   >
                     {STATUS_OPTIONS.map(opt => (
@@ -264,7 +302,7 @@ export default function ApplicationDetailPage() {
                 )}
                 <div className="flex justify-between items-center py-2">
                   <span className="text-[12px] text-muted-foreground">Co-op cycle</span>
-                  <span className="text-[12px] text-primary">{app.cycleId ? 'Fall 2026' : '—'}</span>
+                  <span className="text-[12px] text-primary">{cycleName ? `${cycleName.term} ${cycleName.year}` : '—'}</span>
                 </div>
               </div>
             </SectionCard>
@@ -298,8 +336,12 @@ export default function ApplicationDetailPage() {
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-[12px] text-primary placeholder:text-muted-foreground outline-none resize-none"
               />
               <div className="flex justify-end mt-2">
-                <button className="text-[11px] px-3 py-1.5 rounded-lg bg-[#534AB7] text-white border-0 cursor-pointer">
-                  Save note
+                <button
+                  onClick={handleSaveNote}
+                  disabled={savingNote}
+                  className="text-[11px] px-3 py-1.5 rounded-lg bg-[#534AB7] text-white border-0 cursor-pointer disabled:opacity-50"
+                >
+                  {savingNote ? 'Saving…' : 'Save note'}
                 </button>
               </div>
             </SectionCard>
