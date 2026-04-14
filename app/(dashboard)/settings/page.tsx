@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Trash2 } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { useCycle, CoopCycle } from '@/lib/CycleContext'
@@ -139,6 +139,7 @@ function DeleteAccountModal({ onConfirm, onCancel, loading }: {
 
 export default function SettingsPage() {
   const { cycles, activeCycleId, setActiveCycle, refreshCycles } = useCycle()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [userName, setUserName] = useState('')
   const [userEmail, setUserEmail] = useState('')
@@ -152,8 +153,7 @@ export default function SettingsPage() {
   const [showNewCycleForm, setShowNewCycleForm] = useState(false)
   const [newTerm, setNewTerm] = useState('Fall')
   const [newYear, setNewYear] = useState(CURRENT_YEAR)
-  const [resumeFileName, setResumeFileName] = useState('resume_fall2026.pdf')
-  const [resumeUploaded, setResumeUploaded] = useState(true)
+  const [resumeUploaded, setResumeUploaded] = useState(false)
   const [cycleToDelete, setCycleToDelete] = useState<CoopCycle | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [adding, setAdding] = useState(false)
@@ -176,6 +176,7 @@ export default function SettingsPage() {
       .then(({ data }) => {
         setUserName(data.name)
         setUserEmail(data.email)
+        setResumeUploaded(!!data.resumeText)
       })
       .catch(() => {})
   }, [])
@@ -241,11 +242,18 @@ export default function SettingsPage() {
     }
   }
 
-  function handleResumeUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleResumeUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    setResumeFileName(file.name)
-    setResumeUploaded(true)
+    if (file.type !== 'application/pdf') {
+      alert('Please upload a PDF file.')
+      e.target.value = ''
+      return
+    }
+    const formData = new FormData()
+    formData.append('file', file)
+    const res = await fetch('/api/resume', { method: 'POST', body: formData })
+    if (res.ok) setResumeUploaded(true)
   }
 
   return (
@@ -326,18 +334,14 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between py-2.5 border-b border-border">
               <div>
                 <div className="text-[13px] text-primary">
-                  {resumeUploaded ? resumeFileName : 'No resume uploaded'}
+                  {resumeUploaded ? 'Resume uploaded' : 'No resume uploaded'}
                 </div>
-                {resumeUploaded && (
-                  <div className="text-[11px] text-muted-foreground mt-0.5">
-                    Uploaded {new Date().toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' })}
-                  </div>
-                )}
               </div>
-              <label className="cursor-pointer">
-                <input type="file" accept=".pdf" className="hidden" onChange={handleResumeUpload} />
-                <GhostButton>{resumeUploaded ? 'Replace' : 'Upload'}</GhostButton>
-              </label>
+              <div className="flex flex-col items-end gap-1">
+                <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={handleResumeUpload} />
+                <GhostButton onClick={() => fileInputRef.current?.click()}>{resumeUploaded ? 'Replace' : 'Upload'}</GhostButton>
+                <span className="text-[10px] text-muted-foreground">PDF only</span>
+              </div>
             </div>
             <div className="mt-2.5 px-2.5 py-2 bg-secondary rounded-lg text-[11px] text-muted-foreground">
               {resumeUploaded

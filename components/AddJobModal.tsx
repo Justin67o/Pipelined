@@ -36,6 +36,29 @@ export default function AddJobModal({ onClose, onAdd }: AddJobModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>('url')
   const [status, setStatus] = useState<Status>('SAVED')
   const [saving, setSaving] = useState(false)
+  const [parsing, setParsing] = useState(false)
+
+  async function handleParse() {
+    if (!pasteDescription.trim()) return
+    setParsing(true)
+    try {
+      const res = await fetch('/api/parse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobDescription: pasteDescription }),
+      })
+      if (!res.ok) return
+      const { data } = await res.json()
+      if (data.company) setCompany(data.company)
+      if (data.role) setRole(data.role)
+      if (data.location) setLocation(data.location)
+      if (data.salary) setSalary(data.salary)
+      setJobDescription(pasteDescription)
+      setActiveTab('manual')
+    } finally {
+      setParsing(false)
+    }
+  }
 
   async function handleSave() {
     if (!company.trim() || !role.trim()) return
@@ -153,9 +176,13 @@ export default function AddJobModal({ onClose, onAdd }: AddJobModalProps) {
                   className={`${inputClass} resize-none`}
                 />
               </div>
-              <button className="self-start inline-flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-lg bg-secondary border border-border text-muted-foreground hover:text-primary cursor-pointer transition-colors">
+              <button
+                onClick={handleParse}
+                disabled={parsing || !pasteDescription.trim()}
+                className="self-start inline-flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-lg bg-secondary border border-border text-muted-foreground hover:text-primary cursor-pointer transition-colors disabled:opacity-50"
+              >
                 <Check size={12} />
-                Parse with AI
+                {parsing ? 'Parsing…' : 'Parse with AI'}
               </button>
             </div>
           )}

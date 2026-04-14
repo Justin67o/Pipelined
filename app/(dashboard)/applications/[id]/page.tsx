@@ -212,7 +212,7 @@ export default function ApplicationDetailPage() {
                   <span className="text-[13px] text-muted-foreground">{app.role}</span>
                   <span className="text-[12px] text-tertiary mt-0.5">
                     {app.remote ? 'Remote' : (app.location ?? '—')}
-                    {app.salary && ` · ${app.salary}`}
+                    {app.salary && ` · ${app.salary.startsWith('$') ? app.salary : `$${Number(app.salary).toLocaleString()}`}`}
                   </span>
                   {app.jobUrl && (
                     <a
