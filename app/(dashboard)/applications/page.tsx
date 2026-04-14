@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import KanbanCard from '../../../components/kanbanCard'
 import { matchScoreColor } from '@/lib/matchScore'
@@ -101,6 +102,7 @@ export default function ApplicationsPage() {
     const [statusFilter, setStatusFilter] = useState('')
     const [applications, setApplications] = useState(mockApplications)
     const [showModal, setShowModal] = useState(false)
+    const router = useRouter()
 
     function handleDragEnd(event: DragEndEvent) {
         const { active, over } = event
@@ -196,6 +198,7 @@ export default function ApplicationsPage() {
                                 filtered.map((app, i) => (
                                     <div
                                         key={app.id}
+                                        onClick={() => router.push(`/applications/${app.id}`)}
                                         className={`grid items-center px-4 py-2.5 cursor-pointer hover:bg-secondary transition-colors ${i < filtered.length - 1 ? 'border-b border-border' : ''}`}
                                         style={{ gridTemplateColumns: COL }}
                                     >
