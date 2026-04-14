@@ -15,23 +15,26 @@ datasource db {
 
 
 model User {
-  id           String        @id @default(cuid())
-  email        String        @unique
-  password     String
-  name         String
-  resumeText   String?
-  cycles       CoopCycle[]
-  applications Application[]
-  createdAt    DateTime      @default(now())
+  id             String        @id @default(cuid())
+  email          String        @unique
+  password       String
+  name           String
+  resumeText     String?
+  activeCycleId  String?
+  activeCycle    CoopCycle?    @relation("ActiveCycle", fields: [activeCycleId], references: [id])
+  cycles         CoopCycle[]   @relation("UserCycles")
+  applications   Application[]
+  createdAt      DateTime      @default(now())
 }
 
 model CoopCycle {
   id           String        @id @default(cuid())
   userId       String
-  user         User          @relation(fields: [userId], references: [id])
+  user         User          @relation("UserCycles", fields: [userId], references: [id])
   term         String
   year         Int
   applications Application[]
+  activeFor    User[]        @relation("ActiveCycle")
   createdAt    DateTime      @default(now())
 
   @@unique([userId, term, year])

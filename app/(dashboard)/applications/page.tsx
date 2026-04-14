@@ -3,6 +3,8 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
+import CyclePill from '@/components/layout/CyclePill'
+
 import KanbanCard from '../../../components/kanbanCard'
 import { matchScoreColor } from '@/lib/matchScore'
 import { DndContext, DragEndEvent, useDroppable } from '@dnd-kit/core'
@@ -49,12 +51,12 @@ const statusLabels: Record<Status, string> = {
 }
 
 const statusColors: Record<Status, { bg: string; text: string }> = {
-    SAVED:        { bg: '#232323', text: '#8d8d9a' },
-    APPLIED:      { bg: '#1a2d42', text: '#5ba3d9' },
+    SAVED: { bg: '#232323', text: '#8d8d9a' },
+    APPLIED: { bg: '#1a2d42', text: '#5ba3d9' },
     PHONE_SCREEN: { bg: '#152820', text: '#4aad8a' },
-    INTERVIEW:    { bg: '#1e1d3d', text: '#8b85e8' },
-    OFFER:        { bg: '#162208', text: '#6ab52b' },
-    REJECTED:     { bg: '#2d1515', text: '#e06060' },
+    INTERVIEW: { bg: '#1e1d3d', text: '#8b85e8' },
+    OFFER: { bg: '#162208', text: '#6ab52b' },
+    REJECTED: { bg: '#2d1515', text: '#e06060' },
 }
 
 const KANBAN_COLUMNS: { status: Status; label: string }[] = [
@@ -104,24 +106,24 @@ export default function ApplicationsPage() {
     const [showModal, setShowModal] = useState(false)
     const router = useRouter()
 
-    function handleDragEnd(event: DragEndEvent) {
-        const { active, over } = event
-        if (!over || active.id === over.id) return
-        setApplications(prev => prev.map(app =>
-            app.id === active.id ? { ...app, status: over.id as Status } : app
-        ))
-    }
+function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    setApplications(prev => prev.map(app =>
+        app.id === active.id ? { ...app, status: over.id as Status } : app
+    ))
+}
 
-    const filtered = applications.filter(a => {
-        const matchesSearch = search === '' ||
-            a.company.toLowerCase().includes(search.toLowerCase()) ||
-            a.role.toLowerCase().includes(search.toLowerCase())
-        const matchesStatus = statusFilter === '' || a.status === statusFilter
-        return matchesSearch && matchesStatus
-    })
+const filtered = applications.filter(a => {
+    const matchesSearch = search === '' ||
+        a.company.toLowerCase().includes(search.toLowerCase()) ||
+        a.role.toLowerCase().includes(search.toLowerCase())
+    const matchesStatus = statusFilter === '' || a.status === statusFilter
+    return matchesSearch && matchesStatus
+})
 
-    return (
-        <>
+return (
+    <>
         <div className="flex flex-col h-full">
 
             {/* Topbar */}
@@ -141,9 +143,7 @@ export default function ApplicationsPage() {
                     </div>
                 </div>
                 <div className="flex gap-2 items-center">
-                    <span className="text-[11px] bg-secondary border border-border rounded-full px-2.5 py-0.5 text-muted-foreground cursor-pointer">
-                        Fall 2026 ▾
-                    </span>
+                    <CyclePill />
                     <button onClick={() => setShowModal(true)} className="text-[12px] px-3 py-1.5 rounded-lg bg-[#534AB7] text-white cursor-pointer border-0">
                         + Add job
                     </button>
@@ -257,6 +257,6 @@ export default function ApplicationsPage() {
             </div>
         </div>
         {showModal && <AddJobModal onClose={() => setShowModal(false)} />}
-        </>
-    )
+    </>
+)
 }

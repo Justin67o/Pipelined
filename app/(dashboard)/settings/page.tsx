@@ -1,61 +1,20 @@
 'use client'
 
 import { useState } from 'react'
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface CoopCycle {
-  id: string
-  userId: string
-  term: string
-  year: number
-  createdAt: Date
-  _count?: { applications: number }
-}
-
-interface User {
-  id: string
-  email: string
-  name: string
-  resumeText: string | null
-  createdAt: Date
-}
-
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const mockUser: User = {
-  id: 'user_1',
-  email: 'j.chen@uwaterloo.ca',
-  name: 'Justin Chen',
-  resumeText: 'Experienced software developer with skills in React, TypeScript, Next.js, PostgreSQL...',
-  createdAt: new Date('2026-01-01'),
-}
-
-const mockCycles: CoopCycle[] = [
-  {
-    id: 'cycle_1',
-    userId: 'user_1',
-    term: 'Fall',
-    year: 2026,
-    createdAt: new Date('2026-01-01'),
-    _count: { applications: 142 },
-  },
-  {
-    id: 'cycle_2',
-    userId: 'user_1',
-    term: 'Winter',
-    year: 2026,
-    createdAt: new Date('2025-09-01'),
-    _count: { applications: 83 },
-  },
-]
-
-const mockActiveCycleId = 'cycle_1'
+import { Trash2 } from 'lucide-react'
+import { useCycle, CoopCycle } from '@/lib/CycleContext'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const TERMS = ['Fall', 'Winter', 'Spring']
-const CURRENT_YEAR = 2026
+const CURRENT_YEAR = new Date().getFullYear()
+
+// ─── Mock Data (non-cycle) ────────────────────────────────────────────────────
+
+const mockUser = {
+  name: 'Justin Chen',
+  email: 'j.chen@uwaterloo.ca',
+}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -94,15 +53,17 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
   )
 }
 
-function GhostButton({ children, onClick, danger }: {
+function GhostButton({ children, onClick, danger, disabled }: {
   children: React.ReactNode
   onClick?: () => void
   danger?: boolean
+  disabled?: boolean
 }) {
   return (
     <button
       onClick={onClick}
-      className={`text-[11px] px-3 py-1.5 rounded-lg bg-transparent cursor-pointer border ${
+      disabled={disabled}
+      className={`text-[11px] px-3 py-1.5 rounded-lg bg-transparent cursor-pointer border disabled:opacity-50 ${
         danger
           ? 'border-[#6b2a2a] text-[#d46b6b]'
           : 'border-border text-muted-foreground'
@@ -113,33 +74,87 @@ function GhostButton({ children, onClick, danger }: {
   )
 }
 
+function DeleteCycleModal({ cycle, onConfirm, onCancel, loading }: {
+  cycle: CoopCycle
+  onConfirm: () => void
+  onCancel: () => void
+  loading: boolean
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-background border border-border rounded-xl p-5 w-[320px] flex flex-col gap-4">
+        <div>
+          <div className="text-[13px] font-medium text-primary mb-1">
+            Delete {cycle.term} {cycle.year}?
+          </div>
+          <div className="text-[11px] text-muted-foreground leading-relaxed">
+            This will permanently delete this cycle
+            {(cycle._count?.applications ?? 0) > 0
+              ? ` and its ${cycle._count!.applications} application${cycle._count!.applications === 1 ? '' : 's'}`
+              : ''}
+            . This cannot be undone.
+          </div>
+        </div>
+        <div className="flex gap-1.5 justify-end">
+          <GhostButton onClick={onCancel}>Cancel</GhostButton>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="text-[11px] px-3 py-1.5 rounded-lg bg-[#3d1010] text-[#d46b6b] border border-[#6b2a2a] cursor-pointer disabled:opacity-50"
+          >
+            {loading ? 'Deleting…' : 'Delete cycle'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Settings Page ────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
+  const { cycles, activeCycleId, setActiveCycle, refreshCycles } = useCycle()
+
   const [followUpReminders, setFollowUpReminders] = useState(true)
   const [deadlineAlerts, setDeadlineAlerts] = useState(false)
-  const [activeCycleId, setActiveCycleId] = useState(mockActiveCycleId)
-  const [cycles, setCycles] = useState(mockCycles)
   const [showNewCycleForm, setShowNewCycleForm] = useState(false)
   const [newTerm, setNewTerm] = useState('Fall')
   const [newYear, setNewYear] = useState(CURRENT_YEAR)
   const [resumeFileName, setResumeFileName] = useState('resume_fall2026.pdf')
   const [resumeUploaded, setResumeUploaded] = useState(true)
+  const [cycleToDelete, setCycleToDelete] = useState<CoopCycle | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [adding, setAdding] = useState(false)
 
-  function handleAddCycle() {
+  async function handleAddCycle() {
     const exists = cycles.find(c => c.term === newTerm && c.year === newYear)
     if (exists) return
-    const newCycle: CoopCycle = {
-      id: `cycle_${Date.now()}`,
-      userId: 'user_1',
-      term: newTerm,
-      year: newYear,
-      createdAt: new Date(),
-      _count: { applications: 0 },
+    setAdding(true)
+    try {
+      const res = await fetch('/api/cycles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ term: newTerm, year: newYear }),
+      })
+      if (res.ok) {
+        await refreshCycles()
+        setShowNewCycleForm(false)
+      }
+    } finally {
+      setAdding(false)
     }
-    setCycles(prev => [newCycle, ...prev])
-    setActiveCycleId(newCycle.id)
-    setShowNewCycleForm(false)
+  }
+
+  async function handleDeleteCycle() {
+    if (!cycleToDelete) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/cycles/${cycleToDelete.id}`, { method: 'DELETE' })
+      if (res.ok) await refreshCycles()
+    } finally {
+      setDeleting(false)
+      setCycleToDelete(null)
+    }
   }
 
   function handleResumeUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -147,11 +162,18 @@ export default function SettingsPage() {
     if (!file) return
     setResumeFileName(file.name)
     setResumeUploaded(true)
-    // When wiring up: POST file to /api/resume, parse PDF, store resumeText on User
   }
 
   return (
     <div className="flex flex-col h-full">
+      {cycleToDelete && (
+        <DeleteCycleModal
+          cycle={cycleToDelete}
+          onConfirm={handleDeleteCycle}
+          onCancel={() => setCycleToDelete(null)}
+          loading={deleting}
+        />
+      )}
 
       {/* Topbar */}
       <div className="h-11 border-b border-border flex items-center px-4 bg-background shrink-0">
@@ -189,12 +211,7 @@ export default function SettingsPage() {
                 )}
               </div>
               <label className="cursor-pointer">
-                <input
-                  type="file"
-                  accept=".pdf"
-                  className="hidden"
-                  onChange={handleResumeUpload}
-                />
+                <input type="file" accept=".pdf" className="hidden" onChange={handleResumeUpload} />
                 <GhostButton>{resumeUploaded ? 'Replace' : 'Upload'}</GhostButton>
               </label>
             </div>
@@ -208,14 +225,9 @@ export default function SettingsPage() {
           {/* Co-op Cycles */}
           <SectionCard title="Co-op cycles">
             {cycles.map(cycle => (
-              <div
-                key={cycle.id}
-                className="flex items-center justify-between py-2.5 border-b border-border"
-              >
+              <div key={cycle.id} className="flex items-center justify-between py-2.5 border-b border-border">
                 <div>
-                  <div className="text-[13px] text-primary">
-                    {cycle.term} {cycle.year}
-                  </div>
+                  <div className="text-[13px] text-primary">{cycle.term} {cycle.year}</div>
                   <div className="text-[11px] text-muted-foreground mt-0.5">
                     {cycle._count?.applications ?? 0} applications
                     {cycle.id === activeCycleId && ' · Active'}
@@ -227,10 +239,16 @@ export default function SettingsPage() {
                       Active
                     </span>
                   ) : (
-                    <GhostButton onClick={() => setActiveCycleId(cycle.id)}>
+                    <GhostButton onClick={() => setActiveCycle(cycle.id)}>
                       Set active
                     </GhostButton>
                   )}
+                  <button
+                    onClick={() => setCycleToDelete(cycle)}
+                    className="p-1.5 rounded-lg text-muted-foreground hover:text-[#d46b6b] hover:bg-[#3d1010] transition-colors cursor-pointer"
+                  >
+                    <Trash2 size={13} />
+                  </button>
                 </div>
               </div>
             ))}
@@ -259,9 +277,10 @@ export default function SettingsPage() {
                   <GhostButton onClick={() => setShowNewCycleForm(false)}>Cancel</GhostButton>
                   <button
                     onClick={handleAddCycle}
-                    className="text-[11px] px-3 py-1.5 rounded-lg bg-[#534AB7] text-white border-0 cursor-pointer"
+                    disabled={adding}
+                    className="text-[11px] px-3 py-1.5 rounded-lg bg-[#534AB7] text-white border-0 cursor-pointer disabled:opacity-50"
                   >
-                    Create cycle
+                    {adding ? 'Creating…' : 'Create cycle'}
                   </button>
                 </div>
               </div>

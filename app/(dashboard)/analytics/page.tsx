@@ -1,5 +1,7 @@
 'use client'
 
+import CyclePill from '@/components/layout/CyclePill'
+
 import {
   BarChart,
   Bar,
@@ -151,9 +153,7 @@ export default function AnalyticsPage() {
       {/* Topbar */}
       <div className="h-11 border-b border-border flex items-center justify-between px-4 bg-background shrink-0">
         <span className="text-[13px] font-medium text-primary">Analytics</span>
-        <span className="text-[11px] bg-secondary border border-border rounded-full px-2.5 py-0.5 text-muted-foreground cursor-pointer">
-          Fall 2026 ▾
-        </span>
+        <CyclePill />
       </div>
 
       {/* Content */}
