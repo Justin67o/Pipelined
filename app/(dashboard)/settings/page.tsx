@@ -1,20 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Trash2 } from 'lucide-react'
+import { signOut } from 'next-auth/react'
 import { useCycle, CoopCycle } from '@/lib/CycleContext'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const TERMS = ['Fall', 'Winter', 'Spring']
 const CURRENT_YEAR = new Date().getFullYear()
-
-// ─── Mock Data (non-cycle) ────────────────────────────────────────────────────
-
-const mockUser = {
-  name: 'Justin Chen',
-  email: 'j.chen@uwaterloo.ca',
-}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -110,10 +104,48 @@ function DeleteCycleModal({ cycle, onConfirm, onCancel, loading }: {
   )
 }
 
+function DeleteAccountModal({ onConfirm, onCancel, loading }: {
+  onConfirm: () => void
+  onCancel: () => void
+  loading: boolean
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-background border border-border rounded-xl p-5 w-[320px] flex flex-col gap-4">
+        <div>
+          <div className="text-[13px] font-medium text-[#d46b6b] mb-1">
+            Delete account?
+          </div>
+          <div className="text-[11px] text-muted-foreground leading-relaxed">
+            This will permanently delete your account, all your cycles, and all your applications. This cannot be undone.
+          </div>
+        </div>
+        <div className="flex gap-1.5 justify-end">
+          <GhostButton onClick={onCancel}>Cancel</GhostButton>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="text-[11px] px-3 py-1.5 rounded-lg bg-[#3d1010] text-[#d46b6b] border border-[#6b2a2a] cursor-pointer disabled:opacity-50"
+          >
+            {loading ? 'Deleting…' : 'Delete account'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Settings Page ────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
   const { cycles, activeCycleId, setActiveCycle, refreshCycles } = useCycle()
+
+  const [userName, setUserName] = useState('')
+  const [userEmail, setUserEmail] = useState('')
+  const [editingProfile, setEditingProfile] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [editEmail, setEditEmail] = useState('')
+  const [savingProfile, setSavingProfile] = useState(false)
 
   const [followUpReminders, setFollowUpReminders] = useState(true)
   const [deadlineAlerts, setDeadlineAlerts] = useState(false)
@@ -125,6 +157,52 @@ export default function SettingsPage() {
   const [cycleToDelete, setCycleToDelete] = useState<CoopCycle | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [adding, setAdding] = useState(false)
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false)
+  const [deletingAccount, setDeletingAccount] = useState(false)
+
+  async function handleDeleteAccount() {
+    setDeletingAccount(true)
+    try {
+      const res = await fetch('/api/user', { method: 'DELETE' })
+      if (res.ok) await signOut({ callbackUrl: '/login' })
+    } finally {
+      setDeletingAccount(false)
+    }
+  }
+
+  useEffect(() => {
+    fetch('/api/user')
+      .then(r => r.json())
+      .then(({ data }) => {
+        setUserName(data.name)
+        setUserEmail(data.email)
+      })
+      .catch(() => {})
+  }, [])
+
+  function handleEditProfile() {
+    setEditName(userName)
+    setEditEmail(userEmail)
+    setEditingProfile(true)
+  }
+
+  async function handleSaveProfile() {
+    setSavingProfile(true)
+    try {
+      const res = await fetch('/api/user', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editName, email: editEmail }),
+      })
+      if (res.ok) {
+        setUserName(editName)
+        setUserEmail(editEmail)
+        setEditingProfile(false)
+      }
+    } finally {
+      setSavingProfile(false)
+    }
+  }
 
   async function handleAddCycle() {
     const exists = cycles.find(c => c.term === newTerm && c.year === newYear)
@@ -150,7 +228,13 @@ export default function SettingsPage() {
     setDeleting(true)
     try {
       const res = await fetch(`/api/cycles/${cycleToDelete.id}`, { method: 'DELETE' })
-      if (res.ok) await refreshCycles()
+      if (res.ok) {
+        if (cycleToDelete.id === activeCycleId) {
+          const remaining = cycles.filter(c => c.id !== cycleToDelete.id)
+          if (remaining[0]) await setActiveCycle(remaining[0].id)
+        }
+        await refreshCycles()
+      }
     } finally {
       setDeleting(false)
       setCycleToDelete(null)
@@ -174,6 +258,13 @@ export default function SettingsPage() {
           loading={deleting}
         />
       )}
+      {showDeleteAccountModal && (
+        <DeleteAccountModal
+          onConfirm={handleDeleteAccount}
+          onCancel={() => setShowDeleteAccountModal(false)}
+          loading={deletingAccount}
+        />
+      )}
 
       {/* Topbar */}
       <div className="h-11 border-b border-border flex items-center px-4 bg-background shrink-0">
@@ -186,15 +277,48 @@ export default function SettingsPage() {
 
           {/* Profile */}
           <SectionCard title="Profile">
-            <SettingRow label="Name">
-              <span className="text-[12px] text-muted-foreground">{mockUser.name}</span>
-            </SettingRow>
-            <SettingRow label="Email">
-              <span className="text-[12px] text-muted-foreground">{mockUser.email}</span>
-            </SettingRow>
-            <div className="pt-2.5 flex justify-end">
-              <GhostButton>Edit profile</GhostButton>
-            </div>
+            {editingProfile ? (
+              <div className="flex flex-col gap-2 py-1">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11px] text-muted-foreground">Name</label>
+                  <input
+                    value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    className="text-[12px] px-2.5 py-1.5 rounded-lg border border-border bg-secondary text-primary outline-none focus:border-[#534AB7]"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11px] text-muted-foreground">Email</label>
+                  <input
+                    value={editEmail}
+                    onChange={e => setEditEmail(e.target.value)}
+                    className="text-[12px] px-2.5 py-1.5 rounded-lg border border-border bg-secondary text-primary outline-none focus:border-[#534AB7]"
+                  />
+                </div>
+                <div className="flex gap-1.5 justify-end pt-1">
+                  <GhostButton onClick={() => setEditingProfile(false)}>Cancel</GhostButton>
+                  <button
+                    onClick={handleSaveProfile}
+                    disabled={savingProfile || !editName.trim() || !editEmail.trim()}
+                    className="text-[11px] px-3 py-1.5 rounded-lg bg-[#534AB7] text-white border-0 cursor-pointer disabled:opacity-50"
+                  >
+                    {savingProfile ? 'Saving…' : 'Save'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <SettingRow label="Name">
+                  <span className="text-[12px] text-muted-foreground">{userName}</span>
+                </SettingRow>
+                <SettingRow label="Email">
+                  <span className="text-[12px] text-muted-foreground">{userEmail}</span>
+                </SettingRow>
+                <div className="pt-2.5 flex justify-end">
+                  <GhostButton onClick={handleEditProfile}>Edit profile</GhostButton>
+                </div>
+              </>
+            )}
           </SectionCard>
 
           {/* Resume */}
@@ -314,14 +438,14 @@ export default function SettingsPage() {
                 <div className="text-[13px] text-primary">Sign out</div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">Sign out of your account</div>
               </div>
-              <GhostButton>Sign out</GhostButton>
+              <GhostButton onClick={() => signOut({ callbackUrl: '/login' })}>Sign out</GhostButton>
             </div>
             <div className="flex items-center justify-between py-2.5">
               <div>
                 <div className="text-[13px] text-[#d46b6b]">Delete account</div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">Permanently delete all your data</div>
               </div>
-              <GhostButton danger>Delete account</GhostButton>
+              <GhostButton danger onClick={() => setShowDeleteAccountModal(true)}>Delete account</GhostButton>
             </div>
           </SectionCard>
 
