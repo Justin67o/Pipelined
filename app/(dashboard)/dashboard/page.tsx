@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import CyclePill from '@/components/layout/CyclePill'
 import { useCycle } from '@/lib/CycleContext'
 
@@ -123,6 +124,7 @@ function StatCard({ label, value, sub }: { label: string; value: string; sub?: s
 // ─── Dashboard Page ───────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const router = useRouter()
   const { selectedCycleId } = useCycle()
   const [applications, setApplications] = useState<Application[]>([])
 
@@ -205,7 +207,7 @@ export default function DashboardPage() {
             {activePipeline.map(app => {
               const nextDate = getNextDate(app)
               return (
-                <div key={app.id} className="bg-background border border-border rounded-lg px-3 py-2.5 flex items-center justify-between mb-1.5 cursor-pointer">
+                <div key={app.id} onClick={() => router.push(`/applications/${app.id}`)} className="bg-background border border-border rounded-lg px-3 py-2.5 flex items-center justify-between mb-1.5 cursor-pointer">
                   <div>
                     <div className="text-[12px] font-medium text-primary">{app.company}</div>
                     <div className="text-[11px] text-muted-foreground">{app.role}</div>
