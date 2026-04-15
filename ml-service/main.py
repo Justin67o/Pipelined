@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from matcher import compute_match
+from scraper import scrape
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -25,3 +26,15 @@ async def match(body: dict):
 
     return result
     
+@app.post("/scrape")
+async def scrape_url(body: dict):
+    url = body.get("url")
+
+    if not url:
+        return { "error": "No URL provided" }
+
+    try:
+        text = await scrape(url)
+        return { "text": text }
+    except Exception as e:
+        return { "error": str(e) }

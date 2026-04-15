@@ -37,6 +37,44 @@ export default function AddJobModal({ onClose, onAdd }: AddJobModalProps) {
   const [status, setStatus] = useState<Status>('SAVED')
   const [saving, setSaving] = useState(false)
   const [parsing, setParsing] = useState(false)
+  const [scraping, setScraping] = useState(false)
+  const [scrapeError, setScrapeError] = useState('')
+
+  async function handleScrape() {
+    if (!pasteUrl.trim()) return
+    setScraping(true)
+    setScrapeError('')
+    try {
+      const scrapeRes = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: pasteUrl }),
+      })
+      if (!scrapeRes.ok) {
+        const { message } = await scrapeRes.json()
+        setScrapeError(message || 'Failed to scrape URL.')
+        return
+      }
+      const { data: jobDescription } = await scrapeRes.json()
+
+      const parseRes = await fetch('/api/parse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobDescription }),
+      })
+      if (!parseRes.ok) return
+      const { data } = await parseRes.json()
+      if (data.company) setCompany(data.company)
+      if (data.role) setRole(data.role)
+      if (data.location) setLocation(data.location)
+      if (data.salary) setSalary(data.salary)
+      setJobDescription(jobDescription)
+      setJobUrl(pasteUrl)
+      setActiveTab('manual')
+    } finally {
+      setScraping(false)
+    }
+  }
 
   async function handleParse() {
     if (!pasteDescription.trim()) return
@@ -155,11 +193,18 @@ export default function AddJobModal({ onClose, onAdd }: AddJobModalProps) {
                     placeholder="https://jobs.example.com/..."
                     className={inputClass}
                   />
-                  <button className="shrink-0 text-[11px] px-3 py-1.5 rounded-lg bg-secondary border border-border text-muted-foreground hover:text-primary cursor-pointer transition-colors">
-                    Scrape
+                  <button
+                    onClick={handleScrape}
+                    disabled={scraping || !pasteUrl.trim()}
+                    className="shrink-0 text-[11px] px-3 py-1.5 rounded-lg bg-secondary border border-border text-muted-foreground hover:text-primary cursor-pointer transition-colors disabled:opacity-50"
+                  >
+                    {scraping ? 'Scraping…' : 'Scrape'}
                   </button>
                 </div>
               </div>
+              {scrapeError && (
+                <p className="text-[11px] text-red-400">{scrapeError}</p>
+              )}
             </div>
           )}
 
@@ -211,21 +256,13 @@ export default function AddJobModal({ onClose, onAdd }: AddJobModalProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Salary <span className="text-tertiary">(optional)</span></label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">$</span>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={salary}
-                      onChange={e => {
-                        const val = e.target.value
-                        if (val === '' || (/^\d+(\.\d{0,2})?$/.test(val) && Number(val) >= 0)) setSalary(val)
-                      }}
-                      placeholder="52000"
-                      className={`${inputClass} pl-6`}
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    value={salary}
+                    onChange={e => setSalary(e.target.value)}
+                    placeholder="$52,000"
+                    className={inputClass}
+                  />
                 </div>
                 <div>
                   <label className={labelClass}>Deadline <span className="text-tertiary">(optional)</span></label>

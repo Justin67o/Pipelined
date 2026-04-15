@@ -4,3 +4,7 @@ pdfplumber
 sentence-transformers
 google-generativeai
 python-multipart
+
+httpx
+beautifulsoup4
+playwright

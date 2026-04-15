@@ -32,20 +32,6 @@ function SettingRow({ label, children }: { label: string; children: React.ReactN
   )
 }
 
-function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <div
-      onClick={() => onChange(!on)}
-      className={`w-8 h-[18px] rounded-full relative cursor-pointer transition-colors duration-200 shrink-0 ${
-        on ? 'bg-[#534AB7]' : 'bg-secondary border border-border'
-      }`}
-    >
-      <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full transition-[left] duration-200 ${
-        on ? 'left-3.5 bg-white' : 'left-0.5 bg-muted-foreground'
-      }`} />
-    </div>
-  )
-}
 
 function GhostButton({ children, onClick, danger, disabled }: {
   children: React.ReactNode
@@ -148,8 +134,6 @@ export default function SettingsPage() {
   const [editEmail, setEditEmail] = useState('')
   const [savingProfile, setSavingProfile] = useState(false)
 
-  const [followUpReminders, setFollowUpReminders] = useState(true)
-  const [deadlineAlerts, setDeadlineAlerts] = useState(false)
   const [showNewCycleForm, setShowNewCycleForm] = useState(false)
   const [newTerm, setNewTerm] = useState('Fall')
   const [newYear, setNewYear] = useState(CURRENT_YEAR)
@@ -422,17 +406,6 @@ export default function SettingsPage() {
                 </button>
               </div>
             )}
-          </SectionCard>
-
-          {/* Email Reminders */}
-          <SectionCard title="Email reminders">
-            <SettingRow label="Follow-up reminders">
-              <Toggle on={followUpReminders} onChange={setFollowUpReminders} />
-            </SettingRow>
-            <div className="flex items-center justify-between py-2.5">
-              <span className="text-[13px] text-primary">Deadline alerts</span>
-              <Toggle on={deadlineAlerts} onChange={setDeadlineAlerts} />
-            </div>
           </SectionCard>
 
           {/* Account */}

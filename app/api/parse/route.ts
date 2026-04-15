@@ -22,13 +22,13 @@ export async function POST(request: Request) {
             "role": "required, the job title",
             "location": "city and province/state e.g. Toronto, ON — null if not found",
             "remote": boolean — true if remote or hybrid, false otherwise,
-            "salary": "salary or pay range if mentioned e.g. $80,000 - $100,000 — null if not mentioned"}
+            "salary": "salary or pay range if mentioned, normalize to a clean format e.g. $80,000 - $100,000 or $45,700 - $61,000 CAD — null if not mentioned"}
 
             JOB DESCRIPTION: ${jobDescription}`
         )
 
         const rawText = aiResult.response.text().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim()
-        const parsed = JSON.parse(rawText)
+const parsed = JSON.parse(rawText)
 
         return NextResponse.json({ data: parsed }, { status: 200 })
     } catch (error) {
