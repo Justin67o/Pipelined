@@ -25,7 +25,8 @@ async def match(body: dict):
     result = compute_match(resume_text, job_description)
 
     return result
-    
+
+# handler for /scrape post requests
 @app.post("/scrape")
 async def scrape_url(body: dict):
     url = body.get("url")
