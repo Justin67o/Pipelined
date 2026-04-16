@@ -208,20 +208,6 @@ Visit `http://localhost:3000`
 
 ---
 
-## Screenshots Guide
-
-> Replace placeholders above with actual screenshots. Recommended browser window width: 1440px. Use your real application data for authenticity.
-
-| File | What to capture |
-|---|---|
-| `screenshots/dashboard.png` | Full dashboard — stats row + active pipeline + activity feed |
-| `screenshots/add-job.png` | Add job modal — URL tab with a scraped result auto-filled |
-| `screenshots/match-score.png` | Detail page — score ring, matched skills, missing skills visible |
-| `screenshots/table.png` | Applications table — mix of statuses, search bar, match scores |
-| `screenshots/kanban.png` | Kanban view — all four columns with cards |
-| `screenshots/analytics.png` | Analytics — funnel + line chart side by side |
-
----
 
 ## License
 
