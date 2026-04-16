@@ -129,6 +129,7 @@ export default function DashboardPage() {
   const [applications, setApplications] = useState<Application[]>([])
 
   const fetchApplications = useCallback(async () => {
+
     const url = selectedCycleId
       ? `/api/applications?cycleId=${selectedCycleId}`
       : '/api/applications'

@@ -127,6 +127,7 @@ export default function ApplicationDetailPage() {
   const [savingNote, setSavingNote] = useState(false)
 
   useEffect(() => {
+
     fetch(`/api/applications/${id}`)
       .then(r => r.json())
       .then(({ data }) => {

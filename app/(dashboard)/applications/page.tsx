@@ -96,6 +96,7 @@ export default function ApplicationsPage() {
     const router = useRouter()
 
     const fetchApplications = useCallback(async () => {
+
         const url = selectedCycleId
             ? `/api/applications?cycleId=${selectedCycleId}`
             : '/api/applications'
@@ -210,8 +211,8 @@ return (
                         </div>
 
                         {/* Table */}
-                        <div className="bg-background border border-border rounded-xl overflow-hidden">
-                            <div className="grid text-[11px] font-medium text-muted-foreground uppercase tracking-[0.04em] px-4 py-2.5 border-b border-border" style={{ gridTemplateColumns: COL }}>
+                        <div className="bg-background border border-border rounded-xl overflow-y-auto mb-4">
+                            <div className="grid sticky bg-background top-0 text-[11px] font-medium text-muted-foreground uppercase tracking-[0.04em] px-4 py-2.5 border-b border-border" style={{ gridTemplateColumns: COL }}>
                                 <span>Company</span>
                                 <span>Role</span>
                                 <span>Status</span>
