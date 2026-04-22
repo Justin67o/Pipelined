@@ -4,6 +4,8 @@
 
 Pipelined is a full-stack job application tracker built for Waterloo co-op students. Paste a job URL and it auto-fills the details, scores your resume against the job description using a custom ML model, and tracks your entire application pipeline from saved to offer.
 
+[Live Demo](https://pipelined-xi.vercel.app) · [GitHub](https://github.com/Justin67o/Pipelined)
+
 <!-- SCREENSHOT: Full dashboard view showing stats cards, active pipeline with Shopify/Wealthsimple/TD Bank cards, and recent activity feed. Use a wide browser window. -->
 ![Dashboard](screenshots/dashboard.png)
 
