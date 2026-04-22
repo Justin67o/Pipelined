@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { requireAuthentication } from '@/lib/requireAuth';
 
 // delete a coop cycle
-export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
     const user = await requireAuthentication();
     if (!user) return new Response("Unauthorized", { status: 401 });
 

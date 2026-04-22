@@ -4,7 +4,7 @@ import { requireAuthentication } from '@/lib/requireAuth';
 
 
 // get a specific application by id
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
     const user = await requireAuthentication();
     if (!user) return new Response("Unauthorized", { status: 401 });
 
@@ -29,7 +29,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 // update application
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
     const data = await request.json();
     const user = await requireAuthentication();
     if (!user) return new Response("Unauthorized", { status: 401 });
@@ -82,7 +82,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
 }
 
-export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
     const user = await requireAuthentication();
     if (!user) return new Response("Unauthorized", { status: 401 });
 
